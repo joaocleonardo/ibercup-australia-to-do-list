@@ -1,0 +1,45 @@
+rules_version = '2';
+
+// =====================================================================
+// Regras de segurança — Select Australia To-Do
+// =====================================================================
+// Como aplicar:
+//   1. Firebase Console -> Firestore Database -> separador "Rules"
+//   2. Cola TODO este conteúdo por cima do que estiver lá
+//   3. Clica em "Publish"
+//
+// O que isto faz:
+//   - Só utilizadores AUTENTICADOS (login Google feito) podem ler/escrever.
+//   - Fecha o buraco do "Modo de Teste", em que qualquer pessoa na internet
+//     conseguia ler ou apagar as tarefas da equipa.
+// =====================================================================
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /tasks/{taskId} {
+      // Qualquer membro com login Google válido pode ver e editar as missões.
+      allow read, write: if request.auth != null;
+    }
+
+    // Tudo o resto fica bloqueado por defeito.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
+
+// ---------------------------------------------------------------------
+// OPCIONAL — restringir só a emails específicos da equipa
+// (mais seguro: nem todos os utilizadores Google entram, só a lista).
+// Substitui o bloco "match /tasks/{taskId}" acima por este:
+//
+//   match /tasks/{taskId} {
+//     allow read, write: if request.auth != null &&
+//       request.auth.token.email in [
+//         "suporte@pwssrl.pt",
+//         "outro.membro@gmail.com",
+//         "treinador@gmail.com"
+//       ];
+//   }
+// ---------------------------------------------------------------------
