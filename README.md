@@ -6,6 +6,8 @@ Plataforma de lista de tarefas partilhada pela equipa **Select Australia** (Iber
 
 - 🔐 Login com Google (Firebase Auth)
 - 🔄 Sincronização em tempo real (Firestore) — todos veem as alterações ao instante
+- ▦ Vista em colunas por categoria (quadro) ou lista única — a escolha fica guardada no browser
+- ⠿ Arrastar cartões entre colunas para mudar de categoria (rato e telemóvel)
 - 📅 Prazos com urgência (atrasada / hoje / amanhã)
 - 👤 Responsável por missão + filtro "Minhas"
 - 🏷️ Categorias com cor (Viagem · Pagamentos · Equipamento · Documentos)

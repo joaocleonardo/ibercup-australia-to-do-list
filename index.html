@@ -206,6 +206,52 @@
         .btn-secondary:hover { background: #24418a; }
         .btn-secondary:active { transform: scale(0.96); }
 
+        /* VISTA EM COLUNAS (por categoria) */
+        .view-switch { display: flex; gap: 4px; background: var(--navy-800); border: 1px solid var(--border); border-radius: 999px; padding: 4px; }
+        .view-switch button { flex: 1 1 0; background: transparent; color: var(--muted); padding: 7px 10px; border-radius: 999px; font-size: 0.8rem; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; gap: 6px; transition: all 180ms var(--ease-out); }
+        .view-switch button:hover { color: var(--text); }
+        .view-switch button.active { background: var(--gold-soft); color: var(--gold); box-shadow: inset 0 0 0 1px var(--gold); }
+
+        .board { display: none; gap: 0.9rem; overflow-x: auto; padding-bottom: 0.75rem; scroll-snap-type: x proximity; scrollbar-width: thin; }
+        body.board-mode .board { display: flex; }
+        body.board-mode .task-list { display: none; }
+        .board::-webkit-scrollbar { height: 8px; }
+        .board::-webkit-scrollbar-track { background: var(--navy-800); border-radius: 999px; }
+        .board::-webkit-scrollbar-thumb { background: var(--navy-600); border-radius: 999px; }
+
+        .board-col { flex: 0 0 clamp(248px, 78vw, 292px); display: flex; flex-direction: column; min-width: 0; scroll-snap-align: start; background: rgba(255,255,255,0.018); border: 1px solid var(--border); border-radius: var(--radius); transition: border-color 180ms var(--ease-out), background 180ms var(--ease-out); }
+        .board-col-head { display: flex; align-items: center; gap: 8px; padding: 0.7rem 0.85rem; background: var(--navy-800); border-top: 3px solid var(--col-color, var(--border)); border-bottom: 1px solid var(--border-soft); border-radius: var(--radius) var(--radius) 0 0; }
+        .board-col-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+        .board-col-title { font-family: 'Oswald', sans-serif; text-transform: uppercase; letter-spacing: 0.06em; font-size: 0.86rem; font-weight: 600; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .board-col-count { font-size: 0.72rem; font-weight: 700; color: var(--muted); background: var(--navy-700); border: 1px solid var(--border); border-radius: 999px; padding: 2px 8px; font-variant-numeric: tabular-nums; }
+        .board-col-count b { color: var(--green); }
+        .board-col-body { display: flex; flex-direction: column; gap: 0.7rem; padding: 0.7rem; min-height: 96px; }
+        .board-col .task-card { padding: 0.85rem 0.9rem; }
+        .board-col .task-title { font-size: 0.97rem; overflow-wrap: anywhere; }
+        /* Coluna estreita: as ações passam para uma linha própria, senão
+           espremem o título e partem as palavras a meio. */
+        .board-col .task-header { flex-direction: column; align-items: stretch; gap: 6px; }
+        .board-col .task-actions { justify-content: flex-end; gap: 2px; margin-top: 2px; }
+        .board-col .icon-btn { padding: 5px 7px; }
+        .board-col .delete-btn { font-size: 0.72rem; padding: 5px 8px; }
+        .col-empty { text-align: center; color: var(--muted-2); font-size: 0.78rem; line-height: 1.5; padding: 1.3rem 0.6rem; border: 1px dashed var(--border); border-radius: var(--radius-sm); }
+
+        .comment-toggle { background: transparent; color: var(--muted-2); border: 1px solid var(--border); border-radius: 999px; padding: 5px 12px; font-size: 0.74rem; font-weight: 600; transition: all 180ms var(--ease-out); }
+        .comment-toggle:hover { color: var(--gold); border-color: var(--gold); }
+        .comments-section.collapsed { margin-top: 0.7rem; padding-top: 0.7rem; }
+
+        /* ARRASTAR ENTRE COLUNAS */
+        .drag-handle { background: transparent; color: var(--muted-2); font-size: 0.95rem; line-height: 1; padding: 5px 6px; border-radius: 8px; cursor: grab; touch-action: none; transition: all 180ms var(--ease-out); }
+        .drag-handle:hover { color: var(--gold); background: var(--gold-soft); }
+        .drag-handle:active { cursor: grabbing; }
+        .task-card.dragging { opacity: 0.3; filter: saturate(0.35); }
+        .drag-proxy { position: fixed; z-index: 999; pointer-events: none; margin: 0; animation: none; transform: rotate(1.5deg) scale(1.02); border-color: var(--gold); box-shadow: 0 24px 48px -18px rgba(0,0,0,0.9); }
+        .drag-proxy .comments-section, .drag-proxy .task-actions { display: none; }
+        .board-col.drop-target { border-color: var(--gold); background: var(--gold-soft); }
+        .board-col.drop-target .board-col-body { outline: 2px dashed var(--gold); outline-offset: -6px; border-radius: var(--radius); }
+        body.is-dragging { user-select: none; -webkit-user-select: none; cursor: grabbing; }
+        body.is-dragging .task-card { transition: none; }
+
         :focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
         @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
         @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }
@@ -217,6 +263,10 @@
             .add-task-form { flex-direction: column; }
             .add-details { flex-direction: column; }
             .add-details .field { flex: none; }
+            /* Largura pensada para as 5 categorias caberem num ecrã 1920. */
+            body.board-mode .container { max-width: 1960px; }
+            .board-col { flex: 0 0 282px; }
+            .board-col-body { max-height: calc(100dvh - 180px); overflow-y: auto; scrollbar-width: thin; }
         }
         /* TABLET/MOBILE */
         @media (max-width: 620px) {
@@ -310,6 +360,10 @@
                 </div>
 
                 <div class="panel filter-panel">
+                    <div class="view-switch" id="view-switch">
+                        <button type="button" data-view="board" onclick="setView('board')" title="Ver por categorias, em colunas">▦ Colunas</button>
+                        <button type="button" data-view="list" onclick="setView('list')" title="Ver tudo numa lista única">☰ Lista</button>
+                    </div>
                     <div class="filters" id="filters">
                         <button class="filter-chip active" data-filter="all" onclick="setFilter('all')">Todas <span class="badge" id="count-all">0</span></button>
                         <button class="filter-chip" data-filter="active" onclick="setFilter('active')">Ativas <span class="badge" id="count-active">0</span></button>
@@ -335,9 +389,11 @@
             </aside>
 
             <main class="main-col">
-                <div class="task-list" id="task-list">
+                <div id="view-state">
                     <div class="loading-state">A carregar as missões da equipa...</div>
                 </div>
+                <div class="task-list" id="task-list"></div>
+                <div class="board" id="board" aria-label="Missões por categoria"></div>
             </main>
           </div>
         </div>
@@ -366,6 +422,10 @@
         let categoryFilter = 'all';
         let sortMode = 'recent';
         let editingId = null;
+        let viewMode = 'board';          // 'board' = colunas por categoria | 'list' = lista única
+        let dragState = null;            // cartão a ser arrastado entre colunas
+        let pendingRender = false;       // snapshot chegou a meio de um arrasto
+        const expandedCards = new Set(); // ids com comentários abertos (só em colunas)
 
         const CATEGORIES = {
             geral:       { label: 'Geral',       color: 'var(--cat-geral)' },
@@ -455,8 +515,7 @@
                 render();
             }, (error) => {
                 console.error("Erro ao puxar tarefas: ", error);
-                document.getElementById('task-list').innerHTML =
-                    '<div class="error-state">Erro ao carregar. Confirma se o Firestore está ativo no painel do Firebase.</div>';
+                showState('<div class="error-state">Erro ao carregar. Confirma se o Firestore está ativo no painel do Firebase.</div>');
             });
         }
 
@@ -555,6 +614,30 @@
         window.setCategoryFilter = function(cat) { categoryFilter = cat; render(); };
         window.setSort = function(mode) { sortMode = mode; render(); };
 
+        // --- VISTA: COLUNAS vs LISTA ---
+        const VIEW_KEY = 'select-australia-view';
+        function applyViewMode() {
+            document.body.classList.toggle('board-mode', viewMode === 'board');
+            document.querySelectorAll('#view-switch button').forEach(b => b.classList.toggle('active', b.dataset.view === viewMode));
+        }
+        window.setView = function(mode) {
+            viewMode = (mode === 'list') ? 'list' : 'board';
+            try { localStorage.setItem(VIEW_KEY, viewMode); } catch (e) { /* modo privado: fica só nesta sessão */ }
+            applyViewMode();
+            render();
+        };
+        try {
+            const savedView = localStorage.getItem(VIEW_KEY);
+            if (savedView === 'list' || savedView === 'board') viewMode = savedView;
+        } catch (e) { /* localStorage indisponível: fica no modo colunas */ }
+        applyViewMode();
+
+        window.toggleComments = function(taskId) {
+            if (expandedCards.has(taskId)) expandedCards.delete(taskId);
+            else expandedCards.add(taskId);
+            render();
+        };
+
         document.getElementById('new-task-input').addEventListener('keypress', e => { if (e.key === 'Enter') addTask(); });
 
         function refreshMembersDatalist() {
@@ -566,8 +649,20 @@
         // =========================================================
         // RENDER
         // =========================================================
+        function showState(html) {
+            document.getElementById('view-state').innerHTML = html;
+            document.getElementById('task-list').style.display = 'none';
+            document.getElementById('board').style.display = 'none';
+        }
+        function clearState() {
+            document.getElementById('view-state').innerHTML = '';
+            document.getElementById('task-list').style.display = '';
+            document.getElementById('board').style.display = '';
+        }
+
         function render() {
-            const taskList = document.getElementById('task-list');
+            // A meio de um arrasto o DOM não pode ser reconstruído — fica para o fim.
+            if (dragState) { pendingRender = true; return; }
             const myName = currentUser ? firstName(currentUser.displayName || currentUser.email) : '';
 
             const total = allTasks.length;
@@ -595,8 +690,9 @@
             if (categoryFilter !== 'all') visible = visible.filter(t => (t.category || 'geral') === categoryFilter);
 
             // Ordenação (estável — visible já vem por createdAt desc)
+            // Em colunas as concluídas vão sempre para o fundo de cada categoria.
             visible.sort((a, b) => {
-                if (currentFilter === 'all' && (!!a.done !== !!b.done)) return a.done ? 1 : -1;
+                if ((currentFilter === 'all' || viewMode === 'board') && (!!a.done !== !!b.done)) return a.done ? 1 : -1;
                 if (sortMode === 'due') {
                     const da = a.dueDate ? new Date(a.dueDate).getTime() : Infinity;
                     const dbb = b.dueDate ? new Date(b.dueDate).getTime() : Infinity;
@@ -606,7 +702,7 @@
             });
 
             if (total === 0) {
-                taskList.innerHTML = '<div class="empty-state"><div class="big">🏆</div>Não há missões ativas. A equipa está de folga!</div>';
+                showState('<div class="empty-state"><div class="big">🏆</div>Não há missões ativas. A equipa está de folga!</div>');
                 return;
             }
             if (visible.length === 0) {
@@ -615,18 +711,59 @@
                 else if (currentFilter === 'mine') msg = 'Não tens missões atribuídas. 🎉';
                 else if (currentFilter === 'active') msg = 'Tudo feito. Bom trabalho, equipa!';
                 else if (categoryFilter !== 'all') msg = 'Nenhuma missão nesta categoria.';
-                taskList.innerHTML = `<div class="empty-state"><div class="big">✅</div>${msg}</div>`;
+                showState(`<div class="empty-state"><div class="big">✅</div>${msg}</div>`);
                 return;
             }
 
+            clearState();
+            if (viewMode === 'board') renderBoard(visible);
+            else renderList(visible);
+        }
+
+        function renderList(visible) {
+            const taskList = document.getElementById('task-list');
             taskList.innerHTML = '';
             visible.forEach((task, i) => taskList.appendChild(buildTaskCard(task, i)));
+        }
+
+        function renderBoard(visible) {
+            const board = document.getElementById('board');
+            const keys = Object.keys(CATEGORIES).filter(k => categoryFilter === 'all' || k === categoryFilter);
+
+            const groups = {};
+            keys.forEach(k => { groups[k] = []; });
+            visible.forEach(t => {
+                const k = CATEGORIES[t.category] ? t.category : 'geral';
+                if (groups[k]) groups[k].push(t);
+            });
+
+            board.innerHTML = '';
+            keys.forEach(k => {
+                const items = groups[k];
+                const doneHere = items.filter(t => t.done).length;
+                const col = document.createElement('section');
+                col.className = 'board-col';
+                col.dataset.cat = k;
+                col.style.setProperty('--col-color', CATEGORIES[k].color);
+                col.innerHTML = `
+                    <header class="board-col-head">
+                        <span class="board-col-dot" style="background:${CATEGORIES[k].color}"></span>
+                        <span class="board-col-title">${CATEGORIES[k].label}</span>
+                        <span class="board-col-count">${doneHere > 0 ? `<b>${doneHere}</b>/${items.length}` : items.length}</span>
+                    </header>
+                    <div class="board-col-body"></div>`;
+                const body = col.querySelector('.board-col-body');
+                if (items.length === 0) body.innerHTML = '<div class="col-empty">Sem missões<br>arrasta uma para aqui</div>';
+                else items.forEach((task, i) => body.appendChild(buildTaskCard(task, i)));
+                board.appendChild(col);
+            });
         }
 
         function buildTaskCard(task, index) {
             const id = task.id;
             const isDone = !!task.done;
             const card = document.createElement('div');
+            card.dataset.id = id;
             card.style.animationDelay = Math.min(index * 45, 300) + 'ms';
 
             // ---- MODO EDIÇÃO ----
@@ -672,6 +809,25 @@
                 commentsHtml += '</ul>';
             }
 
+            // Em colunas o espaço é curto: comentários ficam atrás de um botão.
+            const nComments = (task.comments || []).length;
+            const collapse = viewMode === 'board' && !expandedCards.has(id);
+            const commentsBlock = collapse
+                ? `<div class="comments-section collapsed">
+                        <button class="comment-toggle" onclick="toggleComments('${id}')">💬 ${nComments > 0 ? nComments + (nComments === 1 ? ' comentário' : ' comentários') : 'Comentar'}</button>
+                    </div>`
+                : `<div class="comments-section">
+                        ${commentsHtml}
+                        <div class="comment-form">
+                            <input type="text" id="comment-input-${id}" placeholder="Adicionar comentário..." autocomplete="off" onkeypress="if(event.key === 'Enter') addComment('${id}')">
+                            <button class="btn-secondary" onclick="addComment('${id}')">Enviar</button>
+                        </div>
+                    </div>`;
+
+            const dragHandle = viewMode === 'board'
+                ? `<button class="drag-handle" title="Arrastar para outra categoria" aria-label="Arrastar para outra categoria">⠿</button>`
+                : '';
+
             card.innerHTML = `
                 <div class="task-header">
                     <div class="task-title-wrapper">
@@ -683,19 +839,103 @@
                         </div>
                     </div>
                     <div class="task-actions">
+                        ${dragHandle}
                         <button class="icon-btn" onclick="startEdit('${id}')" aria-label="Editar missão" title="Editar">✎</button>
                         <button class="delete-btn" onclick="deleteTask('${id}', this)">Apagar</button>
                     </div>
                 </div>
-                <div class="comments-section">
-                    ${commentsHtml}
-                    <div class="comment-form">
-                        <input type="text" id="comment-input-${id}" placeholder="Adicionar comentário..." autocomplete="off" onkeypress="if(event.key === 'Enter') addComment('${id}')">
-                        <button class="btn-secondary" onclick="addComment('${id}')">Enviar</button>
-                    </div>
-                </div>`;
+                ${commentsBlock}`;
             return card;
         }
+
+        // =========================================================
+        // ARRASTAR CARTÕES ENTRE COLUNAS
+        // Pointer Events: funciona com rato e com dedo (a pega tem
+        // touch-action:none, por isso o arrasto não faz scroll).
+        // =========================================================
+        const AUTOSCROLL_EDGE = 60;   // px junto à margem que ativam o scroll
+        const AUTOSCROLL_STEP = 14;   // px por evento de movimento
+
+        function autoScrollBoard(clientX) {
+            const board = document.getElementById('board');
+            if (!board || board.scrollWidth <= board.clientWidth) return;
+            const r = board.getBoundingClientRect();
+            if (clientX < r.left + AUTOSCROLL_EDGE) board.scrollLeft -= AUTOSCROLL_STEP;
+            else if (clientX > r.right - AUTOSCROLL_EDGE) board.scrollLeft += AUTOSCROLL_STEP;
+        }
+
+        function endDrag(commit) {
+            if (!dragState) return;
+            const { card, proxy, target, handle, pointerId, id, from } = dragState;
+            try { if (handle.hasPointerCapture(pointerId)) handle.releasePointerCapture(pointerId); } catch (e) { /* ponteiro já libertado */ }
+            proxy.remove();
+            card.classList.remove('dragging');
+            if (target) target.classList.remove('drop-target');
+            document.body.classList.remove('is-dragging');
+
+            const toCat = (commit && target) ? target.dataset.cat : null;
+            dragState = null;
+            pendingRender = false;
+
+            if (toCat && toCat !== from) {
+                db.collection("tasks").doc(id).update({ category: toCat }).catch(error => {
+                    console.error("Erro ao mudar de categoria: ", error);
+                    render();
+                });
+            }
+            render();
+        }
+
+        document.addEventListener('pointerdown', function(e) {
+            if (dragState || e.button > 0) return;
+            const handle = e.target.closest ? e.target.closest('.drag-handle') : null;
+            if (!handle) return;
+            const card = handle.closest('.task-card');
+            const col = handle.closest('.board-col');
+            if (!card || !col) return;
+
+            e.preventDefault();
+            const rect = card.getBoundingClientRect();
+            const proxy = card.cloneNode(true);
+            proxy.classList.add('drag-proxy');
+            proxy.style.width = rect.width + 'px';
+            proxy.style.left = rect.left + 'px';
+            proxy.style.top = rect.top + 'px';
+            proxy.style.animationDelay = '0ms';
+            document.body.appendChild(proxy);
+
+            card.classList.add('dragging');
+            document.body.classList.add('is-dragging');
+            // Sem captura os eventos continuam a chegar via document; não é fatal.
+            try { handle.setPointerCapture(e.pointerId); } catch (err) { /* ponteiro indisponível */ }
+
+            dragState = {
+                id: card.dataset.id, card, proxy, handle, pointerId: e.pointerId,
+                dx: e.clientX - rect.left, dy: e.clientY - rect.top,
+                from: col.dataset.cat, target: null
+            };
+        });
+
+        document.addEventListener('pointermove', function(e) {
+            if (!dragState || e.pointerId !== dragState.pointerId) return;
+            e.preventDefault();
+            dragState.proxy.style.left = (e.clientX - dragState.dx) + 'px';
+            dragState.proxy.style.top = (e.clientY - dragState.dy) + 'px';
+
+            // O clone tem pointer-events:none, logo elementFromPoint vê o que está por baixo.
+            const under = document.elementFromPoint(e.clientX, e.clientY);
+            const col = (under && under.closest) ? under.closest('.board-col') : null;
+            if (col !== dragState.target) {
+                if (dragState.target) dragState.target.classList.remove('drop-target');
+                dragState.target = col;
+                if (col) col.classList.add('drop-target');
+            }
+            autoScrollBoard(e.clientX);
+        });
+
+        document.addEventListener('pointerup', e => { if (dragState && e.pointerId === dragState.pointerId) endDrag(true); });
+        document.addEventListener('pointercancel', e => { if (dragState && e.pointerId === dragState.pointerId) endDrag(false); });
+        document.addEventListener('keydown', e => { if (e.key === 'Escape' && dragState) endDrag(false); });
     </script>
 </body>
 </html>
