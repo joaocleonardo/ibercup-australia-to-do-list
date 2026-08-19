@@ -29,6 +29,9 @@
             --text: #f4f7ff; --muted: #93a4c9; --muted-2: #6c7da6; --danger: #ff5c6c;
             --cat-viagem: #3b82f6; --cat-pagamentos: #16a85a; --cat-equipamento: #f6b501; --cat-documentos: #14b8a6; --cat-geral: #93a4c9;
             --radius-lg: 20px; --radius: 14px; --radius-sm: 10px;
+            --hairline: rgba(255,255,255,0.07);
+            --sheen: inset 0 1px 0 rgba(255,255,255,0.06);
+            --ease-spring: cubic-bezier(0.32, 0.72, 0, 1);
             --shadow-card: 0 1px 0 rgba(255,255,255,0.04) inset, 0 18px 40px -24px rgba(0,0,0,0.85);
             --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
         }
@@ -58,9 +61,24 @@
         .header-center { text-align: center; position: relative; }
         .header-center > * { position: relative; z-index: 1; }
         .crest-center { display: none; width: 108px; height: auto; margin: 0 auto 0.5rem; filter: drop-shadow(0 10px 26px rgba(0,0,0,0.55)); animation: crestIn 700ms var(--ease-out) both; }
-        /* Deslogado: crest grande centrado + halo. Logado: logo pequeno no canto sup. esq. */
+        .bar-brand { display: flex; align-items: center; gap: 12px; min-width: 0; }
+        .bar-title { display: none; font-family: 'Oswald', sans-serif; text-transform: uppercase; font-size: 1.02rem; letter-spacing: 0.07em; white-space: nowrap; }
+        .bar-title b { color: var(--gold); font-weight: 700; }
+
+        /* Deslogado: crest grande centrado + halo. Logado: barra compacta, para
+           o quadro começar o mais alto possível. */
         body:not(.is-auth) .header-bar { display: none; }
         body:not(.is-auth) .crest-center { display: block; }
+        body.is-auth .bar-title { display: inline; }
+        body.is-auth .header-center { display: none; }
+        /* ">" é essencial: sem ele isto atinge também os <header> das colunas. */
+        body.is-auth .container > header { margin-bottom: 1.15rem; }
+        body.is-auth .header-bar { margin-bottom: 0; }
+
+        /* Estado de sessão em CSS (antes era display inline via JS) */
+        body.is-auth #login-screen { display: none; }
+        body.is-auth #app-screen { display: block; }
+        body.is-auth .user-info { display: flex; }
         body:not(.is-auth) .header-center::before {
             content: ""; position: absolute; top: -22px; left: 50%; width: 280px; height: 280px;
             margin-left: -140px; border-radius: 50%; z-index: 0; pointer-events: none;
@@ -151,7 +169,7 @@
         .empty-state .big { font-size: 1.8rem; margin-bottom: 0.5rem; }
         .error-state { color: var(--danger); border-color: rgba(255,92,108,0.35); }
 
-        .task-card { background: var(--navy-700); border: 1px solid var(--border); border-left: 4px solid var(--border); border-radius: var(--radius); padding: 1.05rem 1.15rem; box-shadow: var(--shadow-card); animation: cardIn 400ms var(--ease-out) both; transition: border-color 220ms var(--ease-out), background 220ms var(--ease-out); }
+        .task-card { background: var(--navy-700); border: 1px solid var(--border); border-left: 4px solid var(--border); border-radius: var(--radius); padding: 1.05rem 1.15rem; box-shadow: var(--shadow-card); animation: cardIn 400ms var(--ease-out) backwards; transition: border-color 220ms var(--ease-spring), background 220ms var(--ease-spring), transform 220ms var(--ease-spring), box-shadow 220ms var(--ease-spring); }
         @keyframes cardIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .task-card.done { border-left-color: var(--green); background: var(--navy-800); }
         .task-card.done .task-title { text-decoration: line-through; text-decoration-color: var(--green); color: var(--muted); }
@@ -212,29 +230,58 @@
         .view-switch button:hover { color: var(--text); }
         .view-switch button.active { background: var(--gold-soft); color: var(--gold); box-shadow: inset 0 0 0 1px var(--gold); }
 
-        .board { display: none; gap: 0.9rem; overflow-x: auto; padding-bottom: 0.75rem; scroll-snap-type: x proximity; scrollbar-width: thin; }
+        .board { display: none; gap: 0.85rem; overflow-x: auto; overscroll-behavior-x: contain; padding-bottom: 2px; scrollbar-width: thin; scrollbar-color: var(--navy-600) transparent; }
         body.board-mode .board { display: flex; }
         body.board-mode .task-list { display: none; }
-        .board::-webkit-scrollbar { height: 8px; }
-        .board::-webkit-scrollbar-track { background: var(--navy-800); border-radius: 999px; }
-        .board::-webkit-scrollbar-thumb { background: var(--navy-600); border-radius: 999px; }
+        .board::-webkit-scrollbar { height: 10px; }
+        .board::-webkit-scrollbar-track { background: transparent; }
+        .board::-webkit-scrollbar-thumb { background: var(--navy-600); border: 3px solid transparent; background-clip: content-box; border-radius: 999px; }
+        .board::-webkit-scrollbar-thumb:hover { background: #2a4a99; background-clip: content-box; }
 
-        .board-col { flex: 0 0 clamp(248px, 78vw, 292px); display: flex; flex-direction: column; min-width: 0; scroll-snap-align: start; background: rgba(255,255,255,0.018); border: 1px solid var(--border); border-radius: var(--radius); transition: border-color 180ms var(--ease-out), background 180ms var(--ease-out); }
-        .board-col-head { display: flex; align-items: center; gap: 8px; padding: 0.7rem 0.85rem; background: var(--navy-800); border-top: 3px solid var(--col-color, var(--border)); border-bottom: 1px solid var(--border-soft); border-radius: var(--radius) var(--radius) 0 0; }
-        .board-col-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
-        .board-col-title { font-family: 'Oswald', sans-serif; text-transform: uppercase; letter-spacing: 0.06em; font-size: 0.86rem; font-weight: 600; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .board-col-count { font-size: 0.72rem; font-weight: 700; color: var(--muted); background: var(--navy-700); border: 1px solid var(--border); border-radius: 999px; padding: 2px 8px; font-variant-numeric: tabular-nums; }
+        /* Coluna = caixa exterior discreta + corpo interior, para dar profundidade
+           sem bordas duras. */
+        .board-col { flex: 0 0 clamp(248px, 78vw, 292px); display: flex; flex-direction: column; min-width: 0; min-height: 0;
+            background: linear-gradient(180deg, rgba(255,255,255,0.035), rgba(255,255,255,0.012));
+            border: 1px solid var(--hairline); border-radius: var(--radius-lg); box-shadow: var(--sheen);
+            transition: border-color 220ms var(--ease-spring), background 220ms var(--ease-spring), box-shadow 220ms var(--ease-spring); }
+        .board-col-head { display: flex; align-items: center; gap: 9px; margin: 0; padding: 0.72rem 0.85rem; position: sticky; top: 0; z-index: 2;
+            background: var(--navy-800); /* fallback se color-mix não existir */
+            background: linear-gradient(180deg, color-mix(in srgb, var(--col-color) 16%, var(--navy-800)), var(--navy-800));
+            border-bottom: 1px solid var(--hairline); border-radius: calc(var(--radius-lg) - 1px) calc(var(--radius-lg) - 1px) 0 0; }
+        .board-col-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; box-shadow: 0 0 0 3px color-mix(in srgb, var(--col-color) 22%, transparent); }
+        .board-col-title { font-family: 'Oswald', sans-serif; text-transform: uppercase; letter-spacing: 0.07em; font-size: 0.84rem; font-weight: 600; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .board-col-count { font-size: 0.7rem; font-weight: 700; color: var(--muted); background: rgba(0,0,0,0.25); border: 1px solid var(--hairline); border-radius: 999px; padding: 2px 8px; font-variant-numeric: tabular-nums; }
         .board-col-count b { color: var(--green); }
-        .board-col-body { display: flex; flex-direction: column; gap: 0.7rem; padding: 0.7rem; min-height: 96px; }
-        .board-col .task-card { padding: 0.85rem 0.9rem; }
+        .board-col-body { display: flex; flex-direction: column; gap: 0.7rem; padding: 0.7rem; min-height: 96px; scrollbar-width: thin; scrollbar-color: var(--navy-600) transparent; }
+        .board-col-body::-webkit-scrollbar { width: 10px; }
+        .board-col-body::-webkit-scrollbar-track { background: transparent; }
+        .board-col-body::-webkit-scrollbar-thumb { background: var(--navy-600); border: 3px solid transparent; background-clip: content-box; border-radius: 999px; }
+        .board-col .task-card { padding: 0.85rem 0.9rem; border-left-color: color-mix(in srgb, var(--col-color) 55%, transparent); }
+        .board-col .task-card.done { border-left-color: var(--green); }
+        .board-col .task-card:hover { transform: translateY(-2px); border-color: color-mix(in srgb, var(--col-color) 40%, var(--border)); box-shadow: var(--shadow-card), 0 12px 28px -20px rgba(0,0,0,0.9); }
         .board-col .task-title { font-size: 0.97rem; overflow-wrap: anywhere; }
         /* Coluna estreita: as ações passam para uma linha própria, senão
            espremem o título e partem as palavras a meio. */
         .board-col .task-header { flex-direction: column; align-items: stretch; gap: 6px; }
         .board-col .task-actions { justify-content: flex-end; gap: 2px; margin-top: 2px; }
+        .board-col .sub-meta { font-size: 0.68rem; margin-top: 6px; }
+        /* Com rato as ações só aparecem no cartão sob o cursor — menos ruído.
+           Em ecrã tátil ficam sempre visíveis, senão eram inalcançáveis. */
+        @media (hover: hover) {
+            .board-col .icon-btn, .board-col .delete-btn { opacity: 0; transition: opacity 200ms var(--ease-spring), color 180ms var(--ease-out), background 180ms var(--ease-out); }
+            .board-col .task-card:hover .icon-btn, .board-col .task-card:hover .delete-btn,
+            .board-col .task-card:focus-within .icon-btn, .board-col .task-card:focus-within .delete-btn { opacity: 1; }
+            /* A pega fica sempre visível, só esbatida: arrastar é a ação principal. */
+            .board-col .drag-handle { opacity: 0.45; }
+            /* Encosta a pega à esquerda: os botões ao lado estão invisíveis até
+               ao hover e senão empurravam-na para o meio do cartão. */
+            .board-col .drag-handle { margin-right: auto; }
+            .board-col .task-card:hover .drag-handle { opacity: 1; }
+        }
         .board-col .icon-btn { padding: 5px 7px; }
         .board-col .delete-btn { font-size: 0.72rem; padding: 5px 8px; }
-        .col-empty { text-align: center; color: var(--muted-2); font-size: 0.78rem; line-height: 1.5; padding: 1.3rem 0.6rem; border: 1px dashed var(--border); border-radius: var(--radius-sm); }
+        .col-empty { text-align: center; color: var(--muted-2); font-size: 0.78rem; line-height: 1.5; padding: 1.5rem 0.6rem; border: 1px dashed var(--border); border-radius: var(--radius); background: rgba(0,0,0,0.12); transition: all 220ms var(--ease-spring); }
+        .col-empty .big { display: block; font-size: 1.2rem; opacity: 0.5; margin-bottom: 0.4rem; }
 
         .comment-toggle { background: transparent; color: var(--muted-2); border: 1px solid var(--border); border-radius: 999px; padding: 5px 12px; font-size: 0.74rem; font-weight: 600; transition: all 180ms var(--ease-out); }
         .comment-toggle:hover { color: var(--gold); border-color: var(--gold); }
@@ -244,10 +291,11 @@
         .drag-handle { background: transparent; color: var(--muted-2); font-size: 0.95rem; line-height: 1; padding: 5px 6px; border-radius: 8px; cursor: grab; touch-action: none; transition: all 180ms var(--ease-out); }
         .drag-handle:hover { color: var(--gold); background: var(--gold-soft); }
         .drag-handle:active { cursor: grabbing; }
-        .task-card.dragging { opacity: 0.3; filter: saturate(0.35); }
-        .drag-proxy { position: fixed; z-index: 999; pointer-events: none; margin: 0; animation: none; transform: rotate(1.5deg) scale(1.02); border-color: var(--gold); box-shadow: 0 24px 48px -18px rgba(0,0,0,0.9); }
+        .task-card.dragging { opacity: 0.25; filter: saturate(0.2); transform: scale(0.98); }
+        .drag-proxy { position: fixed; z-index: 999; pointer-events: none; margin: 0; animation: none; transition: none; transform: rotate(1.8deg) scale(1.03); border-color: var(--gold); box-shadow: 0 30px 60px -20px rgba(0,0,0,0.95), 0 0 0 1px var(--gold-soft); }
         .drag-proxy .comments-section, .drag-proxy .task-actions { display: none; }
-        .board-col.drop-target { border-color: var(--gold); background: var(--gold-soft); }
+        .board-col.drop-target { border-color: var(--gold); background: linear-gradient(180deg, var(--gold-soft), rgba(255,255,255,0.012)); box-shadow: var(--sheen), 0 0 0 1px var(--gold-soft); }
+        .board-col.drop-target .col-empty { border-color: var(--gold); color: var(--gold); background: var(--gold-soft); }
         .board-col.drop-target .board-col-body { outline: 2px dashed var(--gold); outline-offset: -6px; border-radius: var(--radius); }
         body.is-dragging { user-select: none; -webkit-user-select: none; cursor: grabbing; }
         body.is-dragging .task-card { transition: none; }
@@ -266,9 +314,34 @@
             /* Largura pensada para as 5 categorias caberem num ecrã 1920. */
             body.board-mode .container { max-width: 1960px; }
             .board-col { flex: 0 0 282px; }
-            .board-col-body { max-height: calc(100dvh - 180px); overflow-y: auto; scrollbar-width: thin; }
+
+            /* ---- QUADRO FIXO ----
+               A página deixa de fazer scroll: o ecrã é um shell e só as colunas
+               (e o quadro, na horizontal) é que deslizam. Assim nenhuma barra de
+               scroll fica fora de vista, que era o que baralhava a navegação. */
+            body.is-auth.board-mode { height: 100dvh; overflow: hidden; padding-top: 1.35rem; padding-bottom: 1.1rem; }
+            body.is-auth.board-mode .container { display: flex; flex-direction: column; height: 100%; min-height: 0; }
+            body.is-auth.board-mode #app-screen { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+            body.is-auth.board-mode .app-grid { flex: 1; min-height: 0; align-items: stretch; }
+            body.is-auth.board-mode .sidebar { position: static; overflow-y: auto; min-height: 0; padding-right: 4px; }
+            body.is-auth.board-mode .main-col { display: flex; flex-direction: column; min-height: 0; }
+            body.is-auth.board-mode .board { flex: 1; min-height: 0; align-items: stretch; }
+            body.is-auth.board-mode .board-col { max-height: 100%; }
+            body.is-auth.board-mode .board-col-body { flex: 1; min-height: 0; overflow-y: auto; }
         }
-        /* TABLET/MOBILE */
+        /* Ecrãs baixos: o shell fixo espremia demais, volta ao scroll normal. */
+        @media (min-width: 1000px) and (max-height: 600px) {
+            body.is-auth.board-mode { height: auto; overflow: visible; }
+            body.is-auth.board-mode .container { display: block; height: auto; }
+            body.is-auth.board-mode #app-screen { display: block; }
+            body.is-auth.board-mode .board-col-body { overflow-y: visible; }
+        }
+        /* TABLET/MOBILE — a página faz o scroll vertical; o quadro desliza na
+           horizontal com encaixe, uma coluna de cada vez. */
+        @media (max-width: 999px) {
+            .board { scroll-snap-type: x mandatory; scroll-padding-left: 0; }
+            .board-col { scroll-snap-align: start; }
+        }
         @media (max-width: 620px) {
             .add-task-form { flex-direction: column; }
         }
@@ -285,7 +358,10 @@
     <div class="container">
         <header>
             <div class="header-bar">
-                <img src="logo.png" alt="Select Australia" class="brand-mark">
+                <div class="bar-brand">
+                    <img src="logo.png" alt="Select Australia" class="brand-mark">
+                    <span class="bar-title">To-Do da <b>Equipa</b></span>
+                </div>
                 <div class="user-info" id="user-info">
                     <div class="avatar" id="user-avatar"></div>
                     <span id="user-name"></span>
@@ -487,9 +563,6 @@
             if (user) {
                 currentUser = user;
                 document.body.classList.add('is-auth');
-                document.getElementById('login-screen').style.display = 'none';
-                document.getElementById('app-screen').style.display = 'block';
-                document.getElementById('user-info').style.display = 'flex';
                 document.getElementById('user-name').innerText = firstName(user.displayName || user.email);
                 const avatar = document.getElementById('user-avatar');
                 if (user.photoURL) avatar.innerHTML = `<img src="${user.photoURL}" alt="">`;
@@ -498,9 +571,6 @@
             } else {
                 currentUser = null;
                 document.body.classList.remove('is-auth');
-                document.getElementById('login-screen').style.display = 'block';
-                document.getElementById('app-screen').style.display = 'none';
-                document.getElementById('user-info').style.display = 'none';
             }
         });
 
@@ -753,7 +823,7 @@
                     </header>
                     <div class="board-col-body"></div>`;
                 const body = col.querySelector('.board-col-body');
-                if (items.length === 0) body.innerHTML = '<div class="col-empty">Sem missões<br>arrasta uma para aqui</div>';
+                if (items.length === 0) body.innerHTML = '<div class="col-empty"><span class="big">⇣</span>Sem missões<br>arrasta uma para aqui</div>';
                 else items.forEach((task, i) => body.appendChild(buildTaskCard(task, i)));
                 board.appendChild(col);
             });
@@ -790,10 +860,14 @@
             const author = firstName(task.createdBy);
             const cat = CATEGORIES[task.category] || CATEGORIES.geral;
 
-            let chips = `<span class="chip"><span class="dot" style="background:${cat.color}"></span>${cat.label}</span>`;
+            // Em colunas a categoria já é dada pela própria coluna — repeti-la
+            // em cada cartão só engorda o cartão sem dizer nada de novo.
+            let chips = viewMode === 'board' ? ''
+                : `<span class="chip"><span class="dot" style="background:${cat.color}"></span>${cat.label}</span>`;
             if (task.assignee) chips += `<span class="chip assignee">👤 ${escapeHtml(firstName(task.assignee))}</span>`;
             const due = dueInfo(task.dueDate, isDone);
             if (due) chips += `<span class="chip ${due.cls}">${due.text}</span>`;
+            const chipsRow = chips ? `<div class="meta-chips">${chips}</div>` : '';
 
             const created = relativeTime(task.createdAt);
             let sub = `Criado por <span class="who">${escapeHtml(author)}</span>`;
@@ -834,7 +908,7 @@
                         <button class="check-btn" onclick="toggleDone('${id}', ${isDone})" aria-label="Marcar como concluída">${isDone ? '✓' : ''}</button>
                         <div class="task-info">
                             <div class="task-title">${escapeHtml(task.text)}</div>
-                            <div class="meta-chips">${chips}</div>
+                            ${chipsRow}
                             <div class="sub-meta">${sub}</div>
                         </div>
                     </div>
