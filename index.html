@@ -3,67 +3,98 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Select Australia · To-Do da Equipa</title>
-    <meta name="description" content="Plataforma sincronizada da equipa Select Australia — IberCup. Organiza as missões do grupo em tempo real.">
-    <meta name="theme-color" content="#0b1636">
+    <title>Quadro da Equipa · IberCup Australia</title>
+    <link rel="icon" href="logo.png">
 
-    <meta property="og:title" content="Select Australia · To-Do da Equipa">
-    <meta property="og:description" content="As missões da equipa, sincronizadas em tempo real.">
-    <meta property="og:type" content="website">
-
-    <link rel="icon" type="image/png" href="logo.png">
-    <link rel="apple-touch-icon" href="logo.png">
-
-    <!-- Firebase SDKs (Versão Compatível) -->
+    <!-- Firebase (SDK compat, sem build) -->
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js"></script>
 
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+        /* Archivo (eixo de largura) + Plus Jakarta Sans: as mesmas do site
+           ibercup.com.au, para o quadro parecer parte da mesma casa. */
+        @import url('https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
 
         :root {
-            --navy-900: #0b1636; --navy-800: #0f1e45; --navy-700: #142a5e; --navy-600: #1b3573;
-            --border: #26386f; --border-soft: rgba(255,255,255,0.07);
-            --green: #16a85a; --gold: #f6b501; --gold-hover: #ffc933; --gold-soft: rgba(246,181,1,0.14);
-            --text: #f4f7ff; --muted: #93a4c9; --muted-2: #6c7da6; --danger: #ff5c6c;
-            --cat-viagem: #3b82f6; --cat-pagamentos: #16a85a; --cat-equipamento: #f6b501; --cat-documentos: #14b8a6; --cat-geral: #93a4c9;
-            --radius-lg: 20px; --radius: 14px; --radius-sm: 10px;
-            --hairline: rgba(255,255,255,0.07);
-            --sheen: inset 0 1px 0 rgba(255,255,255,0.06);
-            --ease-spring: cubic-bezier(0.32, 0.72, 0, 1);
-            --shadow-card: 0 1px 0 rgba(255,255,255,0.04) inset, 0 18px 40px -24px rgba(0,0,0,0.85);
-            --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+            /* ── Paleta da marca — cópia exata de ibercup/site/src/styles/global.css ── */
+            --navy-950: #070b1c; --navy-900: #0d1330; --navy-800: #141c44; --navy-700: #1e2a5e;
+            --navy-600: #27366f; --navy-500: #33448a; --navy-400: #5b6cb0; --navy-300: #8d9ace;
+            --navy-200: #c0c8e5; --navy-100: #e2e6f4;
+            --gold-600: #d99a1b; --gold-500: #f2b234; --gold-400: #f6c35d; --gold-300: #f9d489;
+            --green-900: #06301f; --green-800: #0b4e35; --green-700: #10613f; --green-600: #177a52;
+            --cream-50: #faf9f6; --cream-100: #f3f1ea; --cream-200: #e8e4d8;
+
+            /* ── Papéis (o resto da folha usa estes, não os tons crus) ── */
+            --bg: var(--navy-950);
+            --surface: var(--navy-900);
+            --text: var(--cream-50);
+            --muted: rgba(250, 249, 246, 0.62);
+            --muted-2: rgba(250, 249, 246, 0.36);
+            --border: rgba(255, 255, 255, 0.10);
+            --hairline: rgba(255, 255, 255, 0.07);
+            --gold: var(--gold-500);
+            --gold-hover: var(--gold-400);
+            --gold-soft: rgba(242, 178, 52, 0.12);
+            --green: var(--green-600);
+            --green-bright: #3ecf8e;
+            --danger: #ff5c6c;
+
+            --radius-lg: 22px; --radius: 14px; --radius-sm: 12px;
+            --sheen: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+            --shadow-card: 0 1px 0 rgba(255,255,255,0.04) inset, 0 18px 40px -24px rgba(0,0,0,0.9);
+            --ease-fluid: cubic-bezier(0.32, 0.72, 0, 1);
+            --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        html { scroll-behavior: smooth; }
+        html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; color-scheme: dark; }
+        ::selection { background: var(--gold-500); color: var(--navy-950); }
+
+        /* BARRAS DE SCROLL — em toda a app, não só no quadro. As nativas do
+           sistema entravam a branco e destoavam do azul da marca. */
+        * { scrollbar-width: thin; scrollbar-color: var(--navy-600) transparent; }
+        ::-webkit-scrollbar { width: 10px; height: 10px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--navy-600); background-clip: content-box; border: 3px solid transparent; border-radius: 999px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--gold-600); background-clip: content-box; }
+        ::-webkit-scrollbar-corner { background: transparent; }
 
         body {
-            font-family: 'Plus Jakarta Sans', sans-serif; background-color: var(--navy-900); color: var(--text);
+            font-family: 'Plus Jakarta Sans', sans-serif; background-color: var(--bg); color: var(--text);
             min-height: 100dvh; display: flex; justify-content: center; padding: 2.5rem 1.1rem 4rem;
             position: relative; overflow-x: hidden; -webkit-font-smoothing: antialiased;
         }
         body::before {
             content: ""; position: fixed; inset: 0; z-index: 0; pointer-events: none;
             background:
-                radial-gradient(70% 45% at 50% -8%, rgba(246,181,1,0.10), transparent 60%),
-                radial-gradient(60% 40% at 50% 0%, rgba(22,168,90,0.10), transparent 55%),
-                radial-gradient(120% 80% at 50% 120%, rgba(11,22,54,0) 40%, #081027 100%);
+                radial-gradient(70% 45% at 50% -8%, rgba(242,178,52,0.10), transparent 60%),
+                radial-gradient(60% 40% at 50% 0%, rgba(23,122,82,0.10), transparent 55%),
+                radial-gradient(120% 80% at 50% 120%, rgba(7,11,28,0) 40%, #04060f 100%);
+        }
+        /* Grão de filme — o mesmo truque do site, dá textura ao azul chapado. */
+        body::after {
+            content: ""; position: fixed; inset: 0; z-index: 40; pointer-events: none; opacity: 0.035;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
         }
         .container { width: 100%; max-width: 640px; position: relative; z-index: 1; }
+
+        /* Títulos: Archivo no eixo largo, como o .display-hero do site. */
+        .display { font-family: 'Archivo', sans-serif; font-variation-settings: 'wdth' 125; font-weight: 900;
+            text-transform: uppercase; line-height: 0.92; letter-spacing: -0.015em; overflow-wrap: anywhere; }
 
         /* HEADER */
         header { margin-bottom: 2.25rem; }
         .header-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 42px; margin-bottom: 1.1rem; }
-        .brand-mark { width: 52px; height: auto; filter: drop-shadow(0 6px 16px rgba(0,0,0,0.55)); animation: crestIn 600ms var(--ease-out) both; }
+        .brand-mark { width: 52px; height: auto; filter: drop-shadow(0 6px 16px rgba(0,0,0,0.55)); animation: crestIn 600ms var(--ease-out-expo) both; }
         @keyframes crestIn { from { opacity: 0; transform: translateY(-6px) scale(0.92); } to { opacity: 1; transform: translateY(0) scale(1); } }
         .header-center { text-align: center; position: relative; }
         .header-center > * { position: relative; z-index: 1; }
-        .crest-center { display: none; width: 108px; height: auto; margin: 0 auto 0.5rem; filter: drop-shadow(0 10px 26px rgba(0,0,0,0.55)); animation: crestIn 700ms var(--ease-out) both; }
+        .crest-center { display: none; width: 108px; height: auto; margin: 0 auto 0.5rem; filter: drop-shadow(0 10px 26px rgba(0,0,0,0.55)); animation: crestIn 700ms var(--ease-out-expo) both; }
         .bar-brand { display: flex; align-items: center; gap: 12px; min-width: 0; }
-        .bar-title { display: none; font-family: 'Oswald', sans-serif; text-transform: uppercase; font-size: 1.02rem; letter-spacing: 0.07em; white-space: nowrap; }
-        .bar-title b { color: var(--gold); font-weight: 700; }
+        .bar-title { display: none; font-family: 'Archivo', sans-serif; font-variation-settings: 'wdth' 125; font-weight: 800;
+            text-transform: uppercase; font-size: 1rem; letter-spacing: 0.01em; white-space: nowrap; }
+        .bar-title b { color: var(--gold); font-weight: 900; }
 
         /* Deslogado: crest grande centrado + halo. Logado: barra compacta, para
            o quadro começar o mais alto possível. */
@@ -82,15 +113,16 @@
         body:not(.is-auth) .header-center::before {
             content: ""; position: absolute; top: -22px; left: 50%; width: 280px; height: 280px;
             margin-left: -140px; border-radius: 50%; z-index: 0; pointer-events: none;
-            background: radial-gradient(circle, rgba(246,181,1,0.16), rgba(22,168,90,0.07) 45%, transparent 70%);
+            background: radial-gradient(circle, rgba(242,178,52,0.16), rgba(23,122,82,0.07) 45%, transparent 70%);
         }
         .eyebrow {
-            display: inline-block; font-size: 0.68rem; letter-spacing: 0.28em; text-transform: uppercase;
-            color: var(--gold); font-weight: 600; padding: 5px 14px; border: 1px solid var(--gold-soft); border-radius: 999px; background: var(--gold-soft);
+            display: inline-flex; align-items: center; gap: 0.5rem; font-size: 10px; letter-spacing: 0.22em;
+            text-transform: uppercase; color: var(--gold); font-weight: 600; padding: 0.3rem 0.85rem;
+            border: 1px solid var(--gold-soft); border-radius: 9999px; background: var(--gold-soft);
         }
-        header h1 { font-family: 'Oswald', sans-serif; text-transform: uppercase; font-size: clamp(2rem, 7vw, 2.8rem); font-weight: 700; letter-spacing: 0.5px; line-height: 1.05; margin-top: 0.75rem; }
+        header h1 { font-size: clamp(2.1rem, 7.5vw, 3rem); margin-top: 0.8rem; }
         header h1 span { color: var(--gold); }
-        header .subtitle { color: var(--muted); font-size: 0.95rem; margin-top: 0.5rem; }
+        header .subtitle { color: var(--muted); font-size: 0.95rem; margin-top: 0.6rem; }
         .rule { width: 60px; height: 3px; margin: 1.15rem auto 0; border-radius: 3px; background: linear-gradient(90deg, var(--gold), var(--green)); }
 
         .user-info { display: none; align-items: center; gap: 10px; font-size: 0.8rem; color: var(--muted); }
@@ -100,68 +132,87 @@
         .logout-btn:hover { border-color: var(--danger); color: var(--danger); }
 
         /* LOGIN */
-        #login-screen { text-align: center; margin-top: 0.25rem; animation: fadeUp 500ms var(--ease-out) both; }
-        .login-card { position: relative; overflow: hidden; background: linear-gradient(180deg, var(--navy-700), var(--navy-800)); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 2.25rem 1.75rem 1.9rem; box-shadow: var(--shadow-card), inset 0 1px 0 rgba(255,255,255,0.05); max-width: 420px; margin: 0 auto; }
+        #login-screen { text-align: center; margin-top: 0.25rem; animation: fadeUp 500ms var(--ease-out-expo) both; }
+        .login-card { position: relative; overflow: hidden; background: linear-gradient(180deg, var(--navy-800), var(--navy-900)); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 2.25rem 1.75rem 1.9rem; box-shadow: var(--shadow-card), inset 0 1px 0 rgba(255,255,255,0.05); max-width: 420px; margin: 0 auto; }
         .login-card::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, transparent, var(--gold), var(--green), transparent); }
-        .login-eyebrow { display: inline-block; font-size: 0.66rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--gold); font-weight: 700; margin-bottom: 0.7rem; }
-        .login-card p { color: var(--muted); font-size: 0.92rem; line-height: 1.55; max-width: 310px; margin: 0 auto; }
-        .btn-google { background: #fff; color: #1a1a1a; padding: 13px 24px; font-size: 1rem; font-weight: 700; font-family: 'Plus Jakarta Sans', sans-serif; border: none; border-radius: 999px; cursor: pointer; display: inline-flex; align-items: center; gap: 11px; margin-top: 1.6rem; transition: transform 160ms var(--ease-out), box-shadow 200ms var(--ease-out); box-shadow: 0 10px 24px -10px rgba(0,0,0,0.7); }
+        .login-eyebrow { display: inline-block; font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--gold); font-weight: 700; margin-bottom: 0.7rem; }
+        .login-card p { color: var(--muted); font-size: 0.92rem; line-height: 1.55; max-width: 320px; margin: 0 auto; }
+        .btn-google { background: var(--cream-50); color: var(--navy-950); padding: 13px 24px; font-size: 1rem; font-weight: 700; font-family: 'Plus Jakarta Sans', sans-serif; border: none; border-radius: 999px; cursor: pointer; display: inline-flex; align-items: center; gap: 11px; margin-top: 1.6rem; transition: transform 160ms var(--ease-out-expo), box-shadow 200ms var(--ease-out-expo); box-shadow: 0 10px 24px -10px rgba(0,0,0,0.7); }
         .btn-google:hover { box-shadow: 0 14px 30px -10px rgba(0,0,0,0.8); transform: translateY(-1px); }
         .btn-google:active { transform: scale(0.97); }
-        .login-features { display: flex; flex-wrap: wrap; justify-content: center; gap: 9px 18px; margin-top: 1.6rem; padding-top: 1.35rem; border-top: 1px solid var(--border-soft); }
+        .login-features { display: flex; flex-wrap: wrap; justify-content: center; gap: 9px 18px; margin-top: 1.6rem; padding-top: 1.35rem; border-top: 1px solid var(--hairline); }
         .login-features span { font-size: 0.76rem; color: var(--muted); display: inline-flex; align-items: center; gap: 6px; }
-        .login-features .tick { color: var(--green); font-weight: 800; }
+        .login-features .tick { color: var(--green-bright); font-weight: 800; }
         .login-error { margin-top: 0.9rem; color: var(--danger); font-size: 0.85rem; min-height: 1rem; }
 
-        #app-screen { display: none; animation: fadeUp 450ms var(--ease-out) both; }
+        #app-screen { display: none; animation: fadeUp 450ms var(--ease-out-expo) both; }
 
         /* PROGRESSO */
-        .progress-wrap { background: var(--navy-700); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem 1.15rem; box-shadow: var(--shadow-card); }
+        .progress-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem 1.15rem; box-shadow: var(--shadow-card); }
         .progress-top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.7rem; }
-        .progress-label { font-size: 0.8rem; color: var(--muted); font-weight: 500; }
-        .progress-count { font-family: 'Oswald', sans-serif; font-size: 1.05rem; font-weight: 600; letter-spacing: 0.3px; }
+        .progress-label { font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--muted-2); font-weight: 600; }
+        .progress-count { font-family: 'Archivo', sans-serif; font-variation-settings: 'wdth' 125; font-size: 1.1rem; font-weight: 800; }
         .progress-count b { color: var(--gold); }
-        .progress-track { height: 8px; border-radius: 999px; background: var(--navy-800); overflow: hidden; border: 1px solid var(--border-soft); }
-        .progress-bar { height: 100%; width: 100%; border-radius: 999px; transform-origin: left; transform: scaleX(0); background: linear-gradient(90deg, var(--green), var(--gold)); transition: transform 500ms var(--ease-out); }
+        .progress-track { height: 8px; border-radius: 999px; background: var(--navy-950); overflow: hidden; border: 1px solid var(--hairline); }
+        .progress-bar { height: 100%; width: 100%; border-radius: 999px; transform-origin: left; transform: scaleX(0); background: linear-gradient(90deg, var(--green), var(--gold)); transition: transform 500ms var(--ease-out-expo); }
 
-        /* LAYOUT (sidebar + lista) */
+        /* LAYOUT (sidebar + quadro) */
         .app-grid { display: grid; grid-template-columns: 1fr; gap: 1.2rem; }
         .sidebar { display: flex; flex-direction: column; gap: 1.1rem; min-width: 0; }
         .main-col { min-width: 0; }
-        .panel { background: var(--navy-700); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.1rem; box-shadow: var(--shadow-card); }
+        .panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.1rem; box-shadow: var(--shadow-card); }
 
-        /* FORM ADICIONAR */
+        /* FORMULÁRIOS — registo .form-input do site */
         .add-task-form { display: flex; gap: 10px; margin-bottom: 0.85rem; }
         .add-details { display: flex; gap: 8px; flex-wrap: wrap; }
-        .add-details .field { display: flex; flex-direction: column; gap: 3px; flex: 1 1 140px; min-width: 0; }
-        .add-details label { font-size: 0.68rem; color: var(--muted-2); text-transform: uppercase; letter-spacing: 0.08em; padding-left: 2px; }
-        input[type="text"], input[type="date"], select { padding: 12px 14px; background: var(--navy-800); border: 1px solid var(--border); color: var(--text); border-radius: var(--radius-sm); font-size: 0.95rem; font-family: 'Plus Jakarta Sans', sans-serif; width: 100%; transition: border-color 200ms var(--ease-out), box-shadow 200ms var(--ease-out); }
-        .add-details input, .add-details select { padding: 10px 12px; font-size: 0.88rem; }
+        .add-details .field { display: flex; flex-direction: column; gap: 5px; flex: 1 1 140px; min-width: 0; }
+        .add-details label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.14em; color: var(--muted-2); padding-left: 2px; }
+        input[type="text"], input[type="date"], select {
+            width: 100%; min-height: 3rem; border-radius: var(--radius-sm); border: none;
+            background: rgba(255, 255, 255, 0.05); padding: 0.8rem 1rem;
+            font-size: 1rem; /* 16px — evita o zoom automático do iOS */
+            font-family: 'Plus Jakarta Sans', sans-serif; color: var(--text);
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+            transition: box-shadow 300ms var(--ease-fluid), background-color 300ms var(--ease-fluid);
+        }
         input::placeholder { color: var(--muted-2); }
-        input:focus, select:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 0 3px var(--gold-soft); }
-        select { cursor: pointer; }
+        input:focus, select:focus { outline: none; background: rgba(255, 255, 255, 0.07); box-shadow: inset 0 0 0 1.5px var(--gold); }
+        select {
+            cursor: pointer; appearance: none; -webkit-appearance: none; padding-right: 2.5rem;
+            background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23f2b234' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+            background-repeat: no-repeat; background-position: right 1rem center;
+        }
+        select option { background: var(--navy-900); color: var(--text); }
         input[type="date"] { color-scheme: dark; }
+        input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(0.8) sepia(0.4) saturate(3) hue-rotate(-15deg); cursor: pointer; }
+        .add-details input, .add-details select { min-height: 2.6rem; padding: 0.6rem 0.85rem; font-size: 0.9rem; }
+        .add-details select { padding-right: 2.2rem; background-position: right 0.8rem center; }
         .add-task-form input[type="text"] { flex: 1; }
 
         button { font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700; border: none; border-radius: var(--radius-sm); cursor: pointer; }
-        .btn-primary { background: var(--gold); color: #241a00; padding: 12px 22px; text-transform: uppercase; font-family: 'Oswald', sans-serif; letter-spacing: 0.5px; font-size: 0.98rem; display: inline-flex; align-items: center; justify-content: center; gap: 8px; white-space: nowrap; transition: transform 150ms var(--ease-out), background 200ms var(--ease-out); }
+        .btn-primary { background: var(--gold); color: var(--navy-950); padding: 13px 22px; text-transform: uppercase;
+            font-family: 'Archivo', sans-serif; font-variation-settings: 'wdth' 125; font-weight: 800; letter-spacing: 0.02em; font-size: 0.95rem;
+            display: inline-flex; align-items: center; justify-content: center; gap: 8px; white-space: nowrap;
+            transition: transform 150ms var(--ease-out-expo), background 200ms var(--ease-fluid); }
         .btn-primary:hover { background: var(--gold-hover); }
         .btn-primary:active { transform: scale(0.96); }
 
         /* FILTROS */
         .filter-panel { display: flex; flex-direction: column; gap: 0.8rem; }
-        .filter-panel .label { font-size: 0.68rem; color: var(--muted-2); text-transform: uppercase; letter-spacing: 0.1em; }
         .filters { display: flex; gap: 8px; flex-wrap: wrap; }
-        .filter-chip { background: transparent; color: var(--muted); border: 1px solid var(--border); padding: 7px 15px; border-radius: 999px; font-size: 0.82rem; font-weight: 600; transition: all 180ms var(--ease-out); }
-        .filter-chip:hover { color: var(--text); border-color: var(--muted); }
+        .filter-chip { background: transparent; color: var(--muted); border: 1px solid var(--border); padding: 8px 15px; border-radius: 999px; font-size: 0.82rem; font-weight: 600; transition: all 180ms var(--ease-fluid); }
+        .filter-chip:hover { color: var(--text); border-color: var(--navy-400); }
         .filter-chip.active { background: var(--gold-soft); color: var(--gold); border-color: var(--gold); }
         .filter-chip .badge { margin-left: 6px; font-variant-numeric: tabular-nums; opacity: 0.8; }
-        .selects { display: flex; gap: 8px; }
-        .mini-select { flex: 1 1 0; min-width: 0; padding: 9px 12px; font-size: 0.82rem; }
+        .selects { display: flex; flex-direction: column; gap: 8px; }
+        .mini-select { min-height: 2.6rem; padding: 0.6rem 0.85rem; padding-right: 2.2rem; font-size: 0.85rem; background-position: right 0.8rem center; }
         .bulk-actions { display: none; }
-        .clear-done { background: transparent; color: var(--muted); border: 1px solid var(--border); padding: 7px 14px; border-radius: 999px; font-size: 0.8rem; font-weight: 600; width: 100%; transition: all 180ms var(--ease-out); }
+        .clear-done { background: transparent; color: var(--muted); border: 1px solid var(--border); padding: 8px 14px; border-radius: 999px; font-size: 0.8rem; font-weight: 600; width: 100%; transition: all 180ms var(--ease-fluid); }
         .clear-done:hover { color: var(--danger); border-color: var(--danger); }
-        .clear-done.confirm-clear { background: var(--danger); color: #fff; border-color: var(--danger); }
+        .clear-done.confirm-clear { background: var(--danger); color: var(--cream-50); border-color: var(--danger); }
+        /* Cada vista esconde o filtro que já é dado pelas próprias colunas. */
+        body.view-pessoas .filter-assignee { display: none; }
+        body.view-areas .filter-area { display: none; }
 
         /* LISTA / CARTÕES */
         .task-list { display: flex; flex-direction: column; gap: 0.85rem; }
@@ -169,45 +220,48 @@
         .empty-state .big { font-size: 1.8rem; margin-bottom: 0.5rem; }
         .error-state { color: var(--danger); border-color: rgba(255,92,108,0.35); }
 
-        .task-card { background: var(--navy-700); border: 1px solid var(--border); border-left: 4px solid var(--border); border-radius: var(--radius); padding: 1.05rem 1.15rem; box-shadow: var(--shadow-card); animation: cardIn 400ms var(--ease-out) backwards; transition: border-color 220ms var(--ease-spring), background 220ms var(--ease-spring), transform 220ms var(--ease-spring), box-shadow 220ms var(--ease-spring); }
+        .task-card { background: var(--surface); border: 1px solid var(--border); border-left: 4px solid var(--border); border-radius: var(--radius); padding: 1.05rem 1.15rem; box-shadow: var(--shadow-card); animation: cardIn 400ms var(--ease-out-expo) backwards; transition: border-color 220ms var(--ease-fluid), background 220ms var(--ease-fluid), transform 220ms var(--ease-fluid), box-shadow 220ms var(--ease-fluid); }
         @keyframes cardIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .task-card.done { border-left-color: var(--green); background: var(--navy-800); }
-        .task-card.done .task-title { text-decoration: line-through; text-decoration-color: var(--green); color: var(--muted); }
+        .task-card.done { border-left-color: var(--green); background: var(--navy-950); }
+        .task-card.done .task-title { text-decoration: line-through; text-decoration-color: var(--green-bright); color: var(--muted); }
+        .task-card.overdue { border-left-color: var(--danger); }
         .task-card.editing { border-left-color: var(--gold); }
 
         .task-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
         .task-title-wrapper { display: flex; gap: 13px; flex: 1; min-width: 0; }
-        .check-btn { background: none; border: 2px solid var(--muted-2); width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: transparent; font-size: 12px; font-weight: 700; flex-shrink: 0; margin-top: 2px; transition: transform 150ms var(--ease-out), background 200ms var(--ease-out), border-color 200ms var(--ease-out); }
+        .check-btn { background: none; border: 2px solid var(--navy-400); width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: transparent; font-size: 12px; font-weight: 700; flex-shrink: 0; margin-top: 2px; transition: transform 150ms var(--ease-out-expo), background 200ms var(--ease-fluid), border-color 200ms var(--ease-fluid); }
         .check-btn:hover { border-color: var(--gold); }
         .check-btn:active { transform: scale(0.88); }
-        .task-card.done .check-btn { background: var(--green); border-color: var(--green); color: #fff; }
+        .task-card.done .check-btn { background: var(--green); border-color: var(--green); color: var(--cream-50); }
 
         .task-info { flex: 1; min-width: 0; }
-        .task-title { font-size: 1.05rem; font-weight: 600; word-wrap: break-word; }
+        .task-title { font-size: 1.05rem; font-weight: 600; word-wrap: break-word; line-height: 1.35; }
         .meta-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 9px; align-items: center; }
-        .chip { display: inline-flex; align-items: center; gap: 5px; font-size: 0.72rem; font-weight: 600; padding: 3px 9px; border-radius: 999px; border: 1px solid var(--border); color: var(--muted); background: var(--navy-800); }
+        .chip { display: inline-flex; align-items: center; gap: 5px; font-size: 0.72rem; font-weight: 600; padding: 3px 9px; border-radius: 999px; border: 1px solid var(--border); color: var(--muted); background: rgba(255,255,255,0.04); }
         .chip .dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
         .chip.assignee { color: var(--text); }
+        .chip.unassigned { color: var(--gold); border-color: var(--gold-soft); background: var(--gold-soft); }
         .chip.due-over { color: var(--danger); border-color: rgba(255,92,108,0.4); background: rgba(255,92,108,0.1); }
         .chip.due-soon { color: var(--gold); border-color: var(--gold); background: var(--gold-soft); }
         .sub-meta { font-size: 0.72rem; color: var(--muted-2); margin-top: 8px; line-height: 1.5; }
         .sub-meta .who { color: var(--gold); font-weight: 700; }
-        .sub-meta .done-by { color: var(--green); font-weight: 700; }
+        .sub-meta .done-by { color: var(--green-bright); font-weight: 700; }
 
         .task-actions { display: flex; gap: 4px; flex-shrink: 0; align-items: center; }
-        .icon-btn { background: transparent; color: var(--muted-2); font-size: 0.9rem; padding: 5px 8px; border-radius: 999px; transition: all 180ms var(--ease-out); }
+        .icon-btn { background: transparent; color: var(--muted-2); font-size: 0.9rem; padding: 5px 8px; border-radius: 999px; transition: all 180ms var(--ease-fluid); }
         .icon-btn:hover { color: var(--gold); background: var(--gold-soft); }
-        .delete-btn { background: transparent; color: var(--muted-2); font-size: 0.75rem; font-weight: 600; padding: 5px 9px; border-radius: 999px; transition: all 180ms var(--ease-out); }
+        .delete-btn { background: transparent; color: var(--muted-2); font-size: 0.75rem; font-weight: 600; padding: 5px 9px; border-radius: 999px; transition: all 180ms var(--ease-fluid); }
         .delete-btn:hover { color: var(--danger); background: rgba(255,92,108,0.1); }
-        .delete-btn.confirm { color: #fff; background: var(--danger); }
+        .delete-btn.confirm { color: var(--cream-50); background: var(--danger); }
 
-        /* EDIT MODE */
+        /* EDIÇÃO */
         .task-edit { display: flex; flex-direction: column; gap: 8px; }
         .task-edit .edit-row { display: flex; gap: 8px; flex-wrap: wrap; }
-        .task-edit .edit-row > * { flex: 1; min-width: 120px; }
-        .task-edit input, .task-edit select { padding: 10px 12px; font-size: 0.9rem; }
+        .task-edit .edit-row > * { flex: 1; min-width: 130px; }
+        .task-edit input, .task-edit select { min-height: 2.6rem; padding: 0.6rem 0.85rem; font-size: 0.9rem; }
+        .task-edit select { padding-right: 2.2rem; background-position: right 0.8rem center; }
         .edit-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 2px; }
-        .btn-save { background: var(--gold); color: #241a00; padding: 9px 18px; font-size: 0.85rem; font-weight: 700; transition: transform 150ms var(--ease-out), background 200ms var(--ease-out); }
+        .btn-save { background: var(--gold); color: var(--navy-950); padding: 10px 18px; font-size: 0.85rem; font-weight: 700; transition: transform 150ms var(--ease-out-expo), background 200ms var(--ease-fluid); }
         .btn-save:hover { background: var(--gold-hover); }
         .btn-save:active { transform: scale(0.96); }
 
@@ -216,48 +270,62 @@
         .comment-list { list-style: none; margin-bottom: 10px; display: flex; flex-direction: column; gap: 6px; }
         .comment-list li { position: relative; background: rgba(255,255,255,0.04); padding: 8px 30px 8px 12px; border-radius: var(--radius-sm); font-size: 0.85rem; border-left: 2px solid var(--green); line-height: 1.4; }
         .comment-author { font-weight: 700; color: var(--gold); margin-right: 5px; }
-        .comment-del { position: absolute; top: 50%; right: 8px; transform: translateY(-50%); background: transparent; color: var(--muted-2); font-size: 1.1rem; line-height: 1; padding: 2px 6px; border-radius: 6px; transition: all 160ms var(--ease-out); }
+        .comment-del { position: absolute; top: 50%; right: 8px; transform: translateY(-50%); background: transparent; color: var(--muted-2); font-size: 1.1rem; line-height: 1; padding: 2px 6px; border-radius: 6px; transition: all 160ms var(--ease-fluid); }
         .comment-del:hover { color: var(--danger); background: rgba(255,92,108,0.12); }
         .comment-form { display: flex; gap: 8px; }
-        .comment-form input { padding: 9px 13px; font-size: 0.88rem; border-radius: var(--radius-sm); }
-        .btn-secondary { background: var(--navy-600); color: var(--text); padding: 9px 16px; font-size: 0.85rem; font-weight: 600; white-space: nowrap; transition: transform 150ms var(--ease-out), background 200ms var(--ease-out); }
-        .btn-secondary:hover { background: #24418a; }
+        .comment-form input { min-height: 2.6rem; padding: 0.6rem 0.85rem; font-size: 0.9rem; }
+        .btn-secondary { background: var(--navy-700); color: var(--text); padding: 10px 16px; font-size: 0.85rem; font-weight: 600; white-space: nowrap; transition: transform 150ms var(--ease-out-expo), background 200ms var(--ease-fluid); }
+        .btn-secondary:hover { background: var(--navy-600); }
         .btn-secondary:active { transform: scale(0.96); }
 
-        /* VISTA EM COLUNAS (por categoria) */
-        .view-switch { display: flex; gap: 4px; background: var(--navy-800); border: 1px solid var(--border); border-radius: 999px; padding: 4px; }
-        .view-switch button { flex: 1 1 0; background: transparent; color: var(--muted); padding: 7px 10px; border-radius: 999px; font-size: 0.8rem; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; gap: 6px; transition: all 180ms var(--ease-out); }
+        /* ALTERNADOR DE VISTA */
+        .view-switch { display: flex; gap: 4px; background: rgba(255,255,255,0.04); box-shadow: inset 0 0 0 1px rgba(255,255,255,0.1); border-radius: 999px; padding: 4px; }
+        .view-switch button { flex: 1 1 0; background: transparent; color: var(--muted); padding: 9px 8px; border-radius: 999px; font-size: 0.78rem; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; gap: 5px; transition: all 180ms var(--ease-fluid); }
         .view-switch button:hover { color: var(--text); }
         .view-switch button.active { background: var(--gold-soft); color: var(--gold); box-shadow: inset 0 0 0 1px var(--gold); }
 
-        .board { display: none; gap: 0.85rem; overflow-x: auto; overscroll-behavior-x: contain; padding-bottom: 2px; scrollbar-width: thin; scrollbar-color: var(--navy-600) transparent; }
+        /* QUADRO */
+        .board { display: none; gap: 0.85rem; overflow-x: auto; overscroll-behavior-x: contain; padding-bottom: 2px; }
         body.board-mode .board { display: flex; }
         body.board-mode .task-list { display: none; }
-        .board::-webkit-scrollbar { height: 10px; }
-        .board::-webkit-scrollbar-track { background: transparent; }
-        .board::-webkit-scrollbar-thumb { background: var(--navy-600); border: 3px solid transparent; background-clip: content-box; border-radius: 999px; }
-        .board::-webkit-scrollbar-thumb:hover { background: #2a4a99; background-clip: content-box; }
 
         /* Coluna = caixa exterior discreta + corpo interior, para dar profundidade
            sem bordas duras. */
-        .board-col { flex: 0 0 clamp(248px, 78vw, 292px); display: flex; flex-direction: column; min-width: 0; min-height: 0;
+        .board-col { flex: 0 0 clamp(252px, 80vw, 300px); display: flex; flex-direction: column; min-width: 0; min-height: 0;
             background: linear-gradient(180deg, rgba(255,255,255,0.035), rgba(255,255,255,0.012));
             border: 1px solid var(--hairline); border-radius: var(--radius-lg); box-shadow: var(--sheen);
-            transition: border-color 220ms var(--ease-spring), background 220ms var(--ease-spring), box-shadow 220ms var(--ease-spring); }
-        .board-col-head { display: flex; align-items: center; gap: 9px; margin: 0; padding: 0.72rem 0.85rem; position: sticky; top: 0; z-index: 2;
-            background: var(--navy-800); /* fallback se color-mix não existir */
-            background: linear-gradient(180deg, color-mix(in srgb, var(--col-color) 16%, var(--navy-800)), var(--navy-800));
+            transition: border-color 220ms var(--ease-fluid), background 220ms var(--ease-fluid), box-shadow 220ms var(--ease-fluid); }
+        /* min-height fixa: nomes de área com duas linhas ("Famílias &
+           Comunicação") não podem deixar os cabeçalhos de alturas diferentes. */
+        .board-col-head { display: flex; align-items: center; gap: 10px; margin: 0; min-height: 62px; padding: 0.72rem 0.85rem 0.85rem; position: sticky; top: 0; z-index: 2;
+            background: var(--navy-900); /* fallback se color-mix não existir */
+            background: linear-gradient(180deg, color-mix(in srgb, var(--col-color) 18%, var(--navy-900)), var(--navy-900));
             border-bottom: 1px solid var(--hairline); border-radius: calc(var(--radius-lg) - 1px) calc(var(--radius-lg) - 1px) 0 0; }
-        .board-col-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; box-shadow: 0 0 0 3px color-mix(in srgb, var(--col-color) 22%, transparent); }
-        .board-col-title { font-family: 'Oswald', sans-serif; text-transform: uppercase; letter-spacing: 0.07em; font-size: 0.84rem; font-weight: 600; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .board-col-count { font-size: 0.7rem; font-weight: 700; color: var(--muted); background: rgba(0,0,0,0.25); border: 1px solid var(--hairline); border-radius: 999px; padding: 2px 8px; font-variant-numeric: tabular-nums; }
-        .board-col-count b { color: var(--green); }
-        .board-col-body { display: flex; flex-direction: column; gap: 0.7rem; padding: 0.7rem; min-height: 96px; scrollbar-width: thin; scrollbar-color: var(--navy-600) transparent; }
-        .board-col-body::-webkit-scrollbar { width: 10px; }
-        .board-col-body::-webkit-scrollbar-track { background: transparent; }
-        .board-col-body::-webkit-scrollbar-thumb { background: var(--navy-600); border: 3px solid transparent; background-clip: content-box; border-radius: 999px; }
-        .board-col .task-card { padding: 0.85rem 0.9rem; border-left-color: color-mix(in srgb, var(--col-color) 55%, transparent); }
+        /* Avatar do membro: foto do Google quando é a própria sessão, senão a
+           inicial sobre a cor da pessoa. É isto que diz de quem é a coluna. */
+        .col-avatar { width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0; overflow: hidden;
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Archivo', sans-serif; font-variation-settings: 'wdth' 125; font-weight: 900; font-size: 0.9rem;
+            color: var(--navy-950); background: var(--col-color, var(--gold-500));
+            box-shadow: 0 0 0 3px color-mix(in srgb, var(--col-color) 20%, transparent); }
+        .col-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .board-col-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; background: var(--col-color);
+            box-shadow: 0 0 0 3px color-mix(in srgb, var(--col-color) 22%, transparent); }
+        .col-id { display: flex; flex-direction: column; gap: 1px; flex: 1; min-width: 0; }
+        .board-col-title { font-family: 'Archivo', sans-serif; font-variation-settings: 'wdth' 125; font-weight: 800;
+            text-transform: uppercase; letter-spacing: 0.01em; font-size: 0.9rem; line-height: 1.1;
+            overflow-wrap: anywhere; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+        .board-col-sub { font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.14em; color: var(--muted-2);
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .board-col-count { font-size: 0.7rem; font-weight: 700; color: var(--muted); background: rgba(0,0,0,0.3); border: 1px solid var(--hairline); border-radius: 999px; padding: 3px 9px; font-variant-numeric: tabular-nums; }
+        .board-col-count b { color: var(--green-bright); }
+        /* Barra de progresso da coluna, colada ao fundo do cabeçalho. */
+        .col-progress { position: absolute; left: 0; right: 0; bottom: 0; height: 2px; background: rgba(255,255,255,0.07); }
+        .col-progress i { display: block; height: 100%; transform-origin: left; background: var(--col-color); transition: transform 500ms var(--ease-out-expo); }
+        .board-col-body { display: flex; flex-direction: column; gap: 0.7rem; padding: 0.7rem; min-height: 96px; }
+        .board-col .task-card { padding: 0.85rem 0.9rem; border-left-color: color-mix(in srgb, var(--col-color) 60%, transparent); }
         .board-col .task-card.done { border-left-color: var(--green); }
+        .board-col .task-card.overdue { border-left-color: var(--danger); }
         .board-col .task-card:hover { transform: translateY(-2px); border-color: color-mix(in srgb, var(--col-color) 40%, var(--border)); box-shadow: var(--shadow-card), 0 12px 28px -20px rgba(0,0,0,0.9); }
         .board-col .task-title { font-size: 0.97rem; overflow-wrap: anywhere; }
         /* Coluna estreita: as ações passam para uma linha própria, senão
@@ -268,27 +336,24 @@
         /* Com rato as ações só aparecem no cartão sob o cursor — menos ruído.
            Em ecrã tátil ficam sempre visíveis, senão eram inalcançáveis. */
         @media (hover: hover) {
-            .board-col .icon-btn, .board-col .delete-btn { opacity: 0; transition: opacity 200ms var(--ease-spring), color 180ms var(--ease-out), background 180ms var(--ease-out); }
+            .board-col .icon-btn, .board-col .delete-btn { opacity: 0; transition: opacity 200ms var(--ease-fluid), color 180ms var(--ease-fluid), background 180ms var(--ease-fluid); }
             .board-col .task-card:hover .icon-btn, .board-col .task-card:hover .delete-btn,
             .board-col .task-card:focus-within .icon-btn, .board-col .task-card:focus-within .delete-btn { opacity: 1; }
             /* A pega fica sempre visível, só esbatida: arrastar é a ação principal. */
-            .board-col .drag-handle { opacity: 0.45; }
-            /* Encosta a pega à esquerda: os botões ao lado estão invisíveis até
-               ao hover e senão empurravam-na para o meio do cartão. */
-            .board-col .drag-handle { margin-right: auto; }
+            .board-col .drag-handle { opacity: 0.45; margin-right: auto; }
             .board-col .task-card:hover .drag-handle { opacity: 1; }
         }
         .board-col .icon-btn { padding: 5px 7px; }
         .board-col .delete-btn { font-size: 0.72rem; padding: 5px 8px; }
-        .col-empty { text-align: center; color: var(--muted-2); font-size: 0.78rem; line-height: 1.5; padding: 1.5rem 0.6rem; border: 1px dashed var(--border); border-radius: var(--radius); background: rgba(0,0,0,0.12); transition: all 220ms var(--ease-spring); }
+        .col-empty { text-align: center; color: var(--muted-2); font-size: 0.78rem; line-height: 1.5; padding: 1.5rem 0.6rem; border: 1px dashed var(--border); border-radius: var(--radius); background: rgba(0,0,0,0.15); transition: all 220ms var(--ease-fluid); }
         .col-empty .big { display: block; font-size: 1.2rem; opacity: 0.5; margin-bottom: 0.4rem; }
 
-        .comment-toggle { background: transparent; color: var(--muted-2); border: 1px solid var(--border); border-radius: 999px; padding: 5px 12px; font-size: 0.74rem; font-weight: 600; transition: all 180ms var(--ease-out); }
+        .comment-toggle { background: transparent; color: var(--muted-2); border: 1px solid var(--border); border-radius: 999px; padding: 6px 12px; font-size: 0.74rem; font-weight: 600; transition: all 180ms var(--ease-fluid); }
         .comment-toggle:hover { color: var(--gold); border-color: var(--gold); }
         .comments-section.collapsed { margin-top: 0.7rem; padding-top: 0.7rem; }
 
         /* ARRASTAR ENTRE COLUNAS */
-        .drag-handle { background: transparent; color: var(--muted-2); font-size: 0.95rem; line-height: 1; padding: 5px 6px; border-radius: 8px; cursor: grab; touch-action: none; transition: all 180ms var(--ease-out); }
+        .drag-handle { background: transparent; color: var(--muted-2); font-size: 0.95rem; line-height: 1; padding: 5px 6px; border-radius: 8px; cursor: grab; touch-action: none; transition: all 180ms var(--ease-fluid); }
         .drag-handle:hover { color: var(--gold); background: var(--gold-soft); }
         .drag-handle:active { cursor: grabbing; }
         .task-card.dragging { opacity: 0.25; filter: saturate(0.2); transform: scale(0.98); }
@@ -297,13 +362,17 @@
         .board-col.drop-target { border-color: var(--gold); background: linear-gradient(180deg, var(--gold-soft), rgba(255,255,255,0.012)); box-shadow: var(--sheen), 0 0 0 1px var(--gold-soft); }
         .board-col.drop-target .col-empty { border-color: var(--gold); color: var(--gold); background: var(--gold-soft); }
         .board-col.drop-target .board-col-body { outline: 2px dashed var(--gold); outline-offset: -6px; border-radius: var(--radius); }
+        /* A coluna "Por classificar" é só de saída: não se larga nada lá dentro. */
+        .board-col.no-drop.drop-target { border-color: var(--hairline); background: linear-gradient(180deg, rgba(255,255,255,0.035), rgba(255,255,255,0.012)); box-shadow: var(--sheen); }
+        .board-col.no-drop.drop-target .board-col-body { outline: none; }
         body.is-dragging { user-select: none; -webkit-user-select: none; cursor: grabbing; }
         body.is-dragging .task-card { transition: none; }
 
         :focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
         @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
         @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }
-        /* DESKTOP — duas colunas: sidebar fixa + lista larga */
+
+        /* DESKTOP — duas colunas: sidebar fixa + quadro largo */
         @media (min-width: 1000px) {
             .container { max-width: 1080px; }
             .app-grid { grid-template-columns: 352px 1fr; gap: 1.75rem; align-items: start; }
@@ -311,9 +380,9 @@
             .add-task-form { flex-direction: column; }
             .add-details { flex-direction: column; }
             .add-details .field { flex: none; }
-            /* Largura pensada para as 5 categorias caberem num ecrã 1920. */
+            /* Largura pensada para as 7 áreas caberem num ecrã 1920. */
             body.board-mode .container { max-width: 1960px; }
-            .board-col { flex: 0 0 282px; }
+            .board-col { flex: 0 0 286px; }
 
             /* ---- QUADRO FIXO ----
                A página deixa de fazer scroll: o ecrã é um shell e só as colunas
@@ -336,7 +405,7 @@
             body.is-auth.board-mode #app-screen { display: block; }
             body.is-auth.board-mode .board-col-body { overflow-y: visible; }
         }
-        /* TABLET/MOBILE — a página faz o scroll vertical; o quadro desliza na
+        /* TABLET/TELEMÓVEL — a página faz o scroll vertical; o quadro desliza na
            horizontal com encaixe, uma coluna de cada vez. */
         @media (max-width: 999px) {
             .board { scroll-snap-type: x mandatory; scroll-padding-left: 0; }
@@ -345,11 +414,9 @@
         @media (max-width: 620px) {
             .add-task-form { flex-direction: column; }
         }
-        /* TELEMÓVEL PEQUENO */
         @media (max-width: 430px) {
             .add-details { flex-direction: column; }
             .add-details .field { flex: none; }
-            .selects { flex-direction: column; }
         }
     </style>
 </head>
@@ -360,7 +427,7 @@
             <div class="header-bar">
                 <div class="bar-brand">
                     <img src="logo.png" alt="Select Australia" class="brand-mark">
-                    <span class="bar-title">To-Do da <b>Equipa</b></span>
+                    <span class="bar-title">Quadro da <b>Equipa</b></span>
                 </div>
                 <div class="user-info" id="user-info">
                     <div class="avatar" id="user-avatar"></div>
@@ -370,9 +437,9 @@
             </div>
             <div class="header-center">
                 <img src="logo.png" alt="Select Australia" class="crest-center">
-                <span class="eyebrow">IberCup · Austrália</span>
-                <h1>To-Do da <span>Equipa</span></h1>
-                <p class="subtitle">Plataforma sincronizada · Select Australia</p>
+                <span class="eyebrow">IberCup Australia</span>
+                <h1 class="display">Quadro da <span>Equipa</span></h1>
+                <p class="subtitle">Select Australia · o trabalho da equipa, sincronizado</p>
                 <div class="rule"></div>
             </div>
         </header>
@@ -381,15 +448,15 @@
         <div id="login-screen">
             <div class="login-card">
                 <span class="login-eyebrow">Acesso reservado à equipa</span>
-                <p>Entra com a tua conta Google para sincronizares as missões com o grupo em tempo real.</p>
+                <p>Entra com a tua conta IberCup para veres e atualizares o quadro da equipa em tempo real.</p>
                 <button class="btn-google" onclick="loginWithGoogle()">
                     <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
                     Entrar com Google
                 </button>
                 <div class="login-error" id="login-error"></div>
                 <div class="login-features">
-                    <span><span class="tick">✓</span> Missões partilhadas</span>
-                    <span><span class="tick">✓</span> Prazos &amp; responsáveis</span>
+                    <span><span class="tick">✓</span> Uma coluna por pessoa</span>
+                    <span><span class="tick">✓</span> Prazos &amp; áreas de trabalho</span>
                     <span><span class="tick">✓</span> Comentários</span>
                 </div>
             </div>
@@ -409,24 +476,17 @@
 
                 <div class="panel add-panel">
                     <div class="add-task-form">
-                        <input type="text" id="new-task-input" placeholder="Nova missão para a equipa..." autocomplete="off">
+                        <input type="text" id="new-task-input" placeholder="Nova tarefa..." autocomplete="off">
                         <button class="btn-primary" onclick="addTask()">+ Adicionar</button>
                     </div>
                     <div class="add-details">
                         <div class="field">
-                            <label for="new-category">Categoria</label>
-                            <select id="new-category">
-                                <option value="geral">Geral</option>
-                                <option value="viagem">Viagem</option>
-                                <option value="pagamentos">Pagamentos</option>
-                                <option value="equipamento">Equipamento</option>
-                                <option value="documentos">Documentos</option>
-                            </select>
+                            <label for="new-assignee">Responsável</label>
+                            <select id="new-assignee"></select>
                         </div>
                         <div class="field">
-                            <label for="new-assignee">Responsável</label>
-                            <input type="text" id="new-assignee" placeholder="Ex.: Rui" list="members" autocomplete="off">
-                            <datalist id="members"></datalist>
+                            <label for="new-category">Área</label>
+                            <select id="new-category"></select>
                         </div>
                         <div class="field">
                             <label for="new-due">Prazo</label>
@@ -437,8 +497,9 @@
 
                 <div class="panel filter-panel">
                     <div class="view-switch" id="view-switch">
-                        <button type="button" data-view="board" onclick="setView('board')" title="Ver por categorias, em colunas">▦ Colunas</button>
-                        <button type="button" data-view="list" onclick="setView('list')" title="Ver tudo numa lista única">☰ Lista</button>
+                        <button type="button" data-view="pessoas" onclick="setView('pessoas')" title="Uma coluna por pessoa da equipa">👤 Pessoas</button>
+                        <button type="button" data-view="areas" onclick="setView('areas')" title="Uma coluna por área de trabalho">🗂 Áreas</button>
+                        <button type="button" data-view="lista" onclick="setView('lista')" title="Tudo numa lista única">☰ Lista</button>
                     </div>
                     <div class="filters" id="filters">
                         <button class="filter-chip active" data-filter="all" onclick="setFilter('all')">Todas <span class="badge" id="count-all">0</span></button>
@@ -447,15 +508,9 @@
                         <button class="filter-chip" data-filter="mine" onclick="setFilter('mine')">Minhas <span class="badge" id="count-mine">0</span></button>
                     </div>
                     <div class="selects">
-                        <select class="mini-select" id="cat-filter" onchange="setCategoryFilter(this.value)">
-                            <option value="all">Todas as categorias</option>
-                            <option value="geral">Geral</option>
-                            <option value="viagem">Viagem</option>
-                            <option value="pagamentos">Pagamentos</option>
-                            <option value="equipamento">Equipamento</option>
-                            <option value="documentos">Documentos</option>
-                        </select>
-                        <select class="mini-select" id="sort-mode" onchange="setSort(this.value)">
+                        <select class="mini-select filter-area" id="area-filter" onchange="setAreaFilter(this.value)" aria-label="Filtrar por área"></select>
+                        <select class="mini-select filter-assignee" id="assignee-filter" onchange="setAssigneeFilter(this.value)" aria-label="Filtrar por responsável"></select>
+                        <select class="mini-select" id="sort-mode" onchange="setSort(this.value)" aria-label="Ordenar">
                             <option value="recent">Mais recentes</option>
                             <option value="due">Por prazo</option>
                         </select>
@@ -466,10 +521,10 @@
 
             <main class="main-col">
                 <div id="view-state">
-                    <div class="loading-state">A carregar as missões da equipa...</div>
+                    <div class="loading-state">A carregar as tarefas da equipa...</div>
                 </div>
                 <div class="task-list" id="task-list"></div>
-                <div class="board" id="board" aria-label="Missões por categoria"></div>
+                <div class="board" id="board" aria-label="Quadro de tarefas"></div>
             </main>
           </div>
         </div>
@@ -495,26 +550,64 @@
 
         let allTasks = [];
         let currentFilter = 'all';
-        let categoryFilter = 'all';
+        let areaFilter = 'all';
+        let assigneeFilter = 'all';
         let sortMode = 'recent';
         let editingId = null;
-        let viewMode = 'board';          // 'board' = colunas por categoria | 'list' = lista única
+        let viewMode = 'pessoas';        // 'pessoas' | 'areas' | 'lista'
         let dragState = null;            // cartão a ser arrastado entre colunas
         let pendingRender = false;       // snapshot chegou a meio de um arrasto
         const expandedCards = new Set(); // ids com comentários abertos (só em colunas)
 
-        const CATEGORIES = {
-            geral:       { label: 'Geral',       color: 'var(--cat-geral)' },
-            viagem:      { label: 'Viagem',      color: 'var(--cat-viagem)' },
-            pagamentos:  { label: 'Pagamentos',  color: 'var(--cat-pagamentos)' },
-            equipamento: { label: 'Equipamento', color: 'var(--cat-equipamento)' },
-            documentos:  { label: 'Documentos',  color: 'var(--cat-documentos)' }
+        // A equipa real, espelho de ibercup/email-signatures/team.json. São
+        // exatamente os três emails autorizados em firestore.rules — info@ é
+        // caixa partilhada, não é pessoa, por isso fica de fora.
+        const MEMBERS = [
+            { email: 'jonas@ibercup.com.au',  name: 'Jonas Rodrigues', first: 'Jonas',  role: 'Program Director',       color: '#f2b234' },
+            { email: 'luccas@ibercup.com.au', name: 'Luccas Pereira',  first: 'Luccas', role: 'Football Director',      color: '#16a85a' },
+            { email: 'admin@ibercup.com.au',  name: 'João Leonardo',   first: 'João',   role: 'Operations Coordinator', color: '#5b6cb0' }
+        ];
+        const NO_ONE = { key: '__none__', name: 'Por atribuir', role: 'À espera de dono', color: '#8d9ace' };
+
+        // As áreas em que o trabalho da IberCup Australia realmente se divide.
+        const AREAS = {
+            inscricoes:   { label: 'Inscrições & Trials',    color: '#f2b234' },
+            logistica:    { label: 'Logística',              color: '#5b6cb0' },
+            pagamentos:   { label: 'Pagamentos',             color: '#16a85a' },
+            documentacao: { label: 'Documentação',           color: '#14b8a6' },
+            equipamento:  { label: 'Equipamento',            color: '#e8e4d8' },
+            familias:     { label: 'Famílias & Comunicação', color: '#8d9ace' },
+            marketing:    { label: 'Marketing & Clubes',     color: '#d99a1b' }
         };
+        const DEFAULT_AREA = 'logistica';
+        // Tarefas com uma categoria antiga (geral/viagem/documentos/...) caem
+        // aqui. A coluna só aparece enquanto houver alguma, e arrastá-las para
+        // uma área real é o que faz a migração — sem adivinhar por elas.
+        const UNCLASSED = '__unclassed__';
 
         // Helpers
-        const firstName = (name) => (name || '').trim().split(' ')[0] || 'Jogador';
+        const firstName = (name) => (name || '').trim().split(' ')[0] || 'Equipa';
         const escapeHtml = (str) => String(str ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
         const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+
+        const memberByEmail = (email) => MEMBERS.find(m => m.email === email) || null;
+
+        // Quem é o dono da tarefa. Prefere o email; se a tarefa for antiga e só
+        // tiver o nome em texto, tenta casar pelo primeiro nome; senão, ninguém.
+        function memberOf(task) {
+            if (task.assigneeEmail) {
+                const byEmail = memberByEmail(task.assigneeEmail);
+                if (byEmail) return byEmail;
+            }
+            if (task.assignee) {
+                const fn = firstName(task.assignee).toLowerCase();
+                const byName = MEMBERS.find(m => m.first.toLowerCase() === fn);
+                if (byName) return byName;
+            }
+            return null;
+        }
+        const assigneeKey = (task) => { const m = memberOf(task); return m ? m.email : NO_ONE.key; };
+        const normArea = (task) => (AREAS[task.category] ? task.category : UNCLASSED);
 
         function relativeTime(ts) {
             if (!ts || typeof ts.toDate !== 'function') return '';
@@ -534,17 +627,38 @@
             const today = new Date(); today.setHours(0, 0, 0, 0);
             const diff = Math.round((due - today) / 86400000);
             const nice = due.toLocaleDateString('pt-PT', { day: '2-digit', month: 'short' });
-            if (done) return { text: '📅 ' + nice, cls: '' };
-            if (diff < 0)  return { text: '⚠ Atrasada · ' + nice, cls: 'due-over' };
-            if (diff === 0) return { text: '📅 Hoje', cls: 'due-soon' };
-            if (diff === 1) return { text: '📅 Amanhã', cls: 'due-soon' };
-            if (diff <= 3)  return { text: '📅 Faltam ' + diff + ' dias', cls: 'due-soon' };
-            return { text: '📅 ' + nice, cls: '' };
+            if (done) return { text: '📅 ' + nice, cls: '', late: false };
+            if (diff < 0) {
+                const atraso = Math.abs(diff);
+                return { text: '⚠ Atrasada há ' + atraso + (atraso === 1 ? ' dia' : ' dias'), cls: 'due-over', late: true };
+            }
+            if (diff === 0) return { text: '📅 Hoje', cls: 'due-soon', late: false };
+            if (diff === 1) return { text: '📅 Amanhã', cls: 'due-soon', late: false };
+            if (diff <= 3)  return { text: '📅 Faltam ' + diff + ' dias', cls: 'due-soon', late: false };
+            return { text: '📅 ' + nice, cls: '', late: false };
         }
 
-        function catOptions(selected) {
-            return Object.keys(CATEGORIES).map(k =>
-                `<option value="${k}" ${k === selected ? 'selected' : ''}>${CATEGORIES[k].label}</option>`).join('');
+        function areaOptions(selected) {
+            return Object.keys(AREAS).map(k =>
+                `<option value="${k}" ${k === selected ? 'selected' : ''}>${AREAS[k].label}</option>`).join('');
+        }
+        function assigneeOptions(selectedEmail) {
+            const none = `<option value="" ${!selectedEmail ? 'selected' : ''}>Por atribuir</option>`;
+            return none + MEMBERS.map(m =>
+                `<option value="${m.email}" ${m.email === selectedEmail ? 'selected' : ''}>${escapeHtml(m.name)}</option>`).join('');
+        }
+
+        // Os selects fixos são montados uma vez a partir das constantes, para
+        // não haver duas listas de pessoas ou de áreas a divergir.
+        function buildStaticSelects() {
+            document.getElementById('new-assignee').innerHTML = assigneeOptions('');
+            document.getElementById('new-category').innerHTML = areaOptions(DEFAULT_AREA);
+            document.getElementById('area-filter').innerHTML =
+                '<option value="all">Todas as áreas</option>' + areaOptions(null);
+            document.getElementById('assignee-filter').innerHTML =
+                '<option value="all">Todos os responsáveis</option>'
+                + MEMBERS.map(m => `<option value="${m.email}">${escapeHtml(m.name)}</option>`).join('')
+                + `<option value="${NO_ONE.key}">Por atribuir</option>`;
         }
 
         // =========================================================
@@ -565,7 +679,7 @@
                 document.body.classList.add('is-auth');
                 document.getElementById('user-name').innerText = firstName(user.displayName || user.email);
                 const avatar = document.getElementById('user-avatar');
-                if (user.photoURL) avatar.innerHTML = `<img src="${user.photoURL}" alt="">`;
+                if (user.photoURL) avatar.innerHTML = `<img src="${escapeHtml(user.photoURL)}" alt="">`;
                 else avatar.innerText = firstName(user.displayName || user.email).charAt(0).toUpperCase();
                 loadTasksRealtime();
             } else {
@@ -581,7 +695,6 @@
             db.collection("tasks").orderBy("createdAt", "desc").onSnapshot((snap) => {
                 allTasks = [];
                 snap.forEach((doc) => allTasks.push({ id: doc.id, ...doc.data() }));
-                refreshMembersDatalist();
                 render();
             }, (error) => {
                 console.error("Erro ao puxar tarefas: ", error);
@@ -593,11 +706,14 @@
             const input = document.getElementById('new-task-input');
             const text = input.value.trim();
             if (text === '' || !currentUser) return;
-            const category = document.getElementById('new-category').value || 'geral';
-            const assignee = document.getElementById('new-assignee').value.trim();
+            const category = document.getElementById('new-category').value || DEFAULT_AREA;
+            const member = memberByEmail(document.getElementById('new-assignee').value);
             const dueDate = document.getElementById('new-due').value || null;
             db.collection("tasks").add({
-                text, done: false, category, assignee, dueDate,
+                text, done: false, category,
+                assigneeEmail: member ? member.email : null,
+                assignee: member ? member.name : '',
+                dueDate,
                 createdBy: currentUser.displayName || currentUser.email,
                 createdAt: firebase.firestore.FieldValue.serverTimestamp(),
                 comments: []
@@ -605,7 +721,7 @@
                 input.value = '';
                 document.getElementById('new-assignee').value = '';
                 document.getElementById('new-due').value = '';
-                document.getElementById('new-category').value = 'geral';
+                document.getElementById('new-category').value = DEFAULT_AREA;
                 input.focus();
             });
         }
@@ -636,11 +752,14 @@
         window.saveEdit = function(taskId) {
             const text = document.getElementById('edit-text-' + taskId).value.trim();
             if (text === '') return;
-            const category = document.getElementById('edit-cat-' + taskId).value || 'geral';
-            const assignee = document.getElementById('edit-assignee-' + taskId).value.trim();
+            const category = document.getElementById('edit-cat-' + taskId).value || DEFAULT_AREA;
+            const member = memberByEmail(document.getElementById('edit-assignee-' + taskId).value);
             const dueDate = document.getElementById('edit-due-' + taskId).value || null;
-            db.collection("tasks").doc(taskId).update({ text, category, assignee, dueDate })
-                .then(() => { editingId = null; render(); });
+            db.collection("tasks").doc(taskId).update({
+                text, category, dueDate,
+                assigneeEmail: member ? member.email : null,
+                assignee: member ? member.name : ''
+            }).then(() => { editingId = null; render(); });
         };
 
         // --- COMENTÁRIOS (com id único: corrige o bug do arrayUnion) ---
@@ -681,25 +800,32 @@
             document.querySelectorAll('.filter-chip').forEach(chip => chip.classList.toggle('active', chip.dataset.filter === filter));
             render();
         };
-        window.setCategoryFilter = function(cat) { categoryFilter = cat; render(); };
+        window.setAreaFilter = function(area) { areaFilter = area; render(); };
+        window.setAssigneeFilter = function(who) { assigneeFilter = who; render(); };
         window.setSort = function(mode) { sortMode = mode; render(); };
 
-        // --- VISTA: COLUNAS vs LISTA ---
+        // --- VISTA: PESSOAS / ÁREAS / LISTA ---
         const VIEW_KEY = 'select-australia-view';
+        const VIEWS = ['pessoas', 'areas', 'lista'];
         function applyViewMode() {
-            document.body.classList.toggle('board-mode', viewMode === 'board');
+            document.body.classList.toggle('board-mode', viewMode !== 'lista');
+            VIEWS.forEach(v => document.body.classList.toggle('view-' + v, viewMode === v));
             document.querySelectorAll('#view-switch button').forEach(b => b.classList.toggle('active', b.dataset.view === viewMode));
         }
         window.setView = function(mode) {
-            viewMode = (mode === 'list') ? 'list' : 'board';
+            viewMode = VIEWS.includes(mode) ? mode : 'pessoas';
             try { localStorage.setItem(VIEW_KEY, viewMode); } catch (e) { /* modo privado: fica só nesta sessão */ }
             applyViewMode();
             render();
         };
         try {
-            const savedView = localStorage.getItem(VIEW_KEY);
-            if (savedView === 'list' || savedView === 'board') viewMode = savedView;
-        } catch (e) { /* localStorage indisponível: fica no modo colunas */ }
+            // 'board'/'list' são os valores gravados pela versão anterior da app.
+            const saved = localStorage.getItem(VIEW_KEY);
+            if (VIEWS.includes(saved)) viewMode = saved;
+            else if (saved === 'list') viewMode = 'lista';
+            else if (saved === 'board') viewMode = 'pessoas';
+        } catch (e) { /* localStorage indisponível: fica na vista por pessoas */ }
+        buildStaticSelects();
         applyViewMode();
 
         window.toggleComments = function(taskId) {
@@ -709,12 +835,6 @@
         };
 
         document.getElementById('new-task-input').addEventListener('keypress', e => { if (e.key === 'Enter') addTask(); });
-
-        function refreshMembersDatalist() {
-            const names = new Set();
-            allTasks.forEach(t => { if (t.assignee) names.add(firstName(t.assignee)); if (t.createdBy) names.add(firstName(t.createdBy)); });
-            document.getElementById('members').innerHTML = [...names].sort().map(n => `<option value="${escapeHtml(n)}">`).join('');
-        }
 
         // =========================================================
         // RENDER
@@ -733,12 +853,12 @@
         function render() {
             // A meio de um arrasto o DOM não pode ser reconstruído — fica para o fim.
             if (dragState) { pendingRender = true; return; }
-            const myName = currentUser ? firstName(currentUser.displayName || currentUser.email) : '';
+            const myEmail = currentUser ? currentUser.email : '';
 
             const total = allTasks.length;
             const doneCount = allTasks.filter(t => t.done).length;
             const activeCount = total - doneCount;
-            const mineCount = allTasks.filter(t => t.assignee && firstName(t.assignee) === myName).length;
+            const mineCount = allTasks.filter(t => assigneeKey(t) === myEmail).length;
 
             document.getElementById('progress-count').innerHTML = `<b>${doneCount}</b> / ${total}`;
             document.getElementById('progress-bar').style.transform = `scaleX(${total ? (doneCount / total) : 0})`;
@@ -756,13 +876,16 @@
             let visible = allTasks.slice();
             if (currentFilter === 'active') visible = visible.filter(t => !t.done);
             else if (currentFilter === 'done') visible = visible.filter(t => t.done);
-            else if (currentFilter === 'mine') visible = visible.filter(t => t.assignee && firstName(t.assignee) === myName);
-            if (categoryFilter !== 'all') visible = visible.filter(t => (t.category || 'geral') === categoryFilter);
+            else if (currentFilter === 'mine') visible = visible.filter(t => assigneeKey(t) === myEmail);
+            // O filtro de área não se aplica na vista Áreas (as colunas já são
+            // isso), e o de responsável não se aplica na vista Pessoas.
+            if (viewMode !== 'areas' && areaFilter !== 'all') visible = visible.filter(t => normArea(t) === areaFilter);
+            if (viewMode !== 'pessoas' && assigneeFilter !== 'all') visible = visible.filter(t => assigneeKey(t) === assigneeFilter);
 
             // Ordenação (estável — visible já vem por createdAt desc)
-            // Em colunas as concluídas vão sempre para o fundo de cada categoria.
+            // Em colunas as concluídas vão sempre para o fundo de cada coluna.
             visible.sort((a, b) => {
-                if ((currentFilter === 'all' || viewMode === 'board') && (!!a.done !== !!b.done)) return a.done ? 1 : -1;
+                if ((currentFilter === 'all' || viewMode !== 'lista') && (!!a.done !== !!b.done)) return a.done ? 1 : -1;
                 if (sortMode === 'due') {
                     const da = a.dueDate ? new Date(a.dueDate).getTime() : Infinity;
                     const dbb = b.dueDate ? new Date(b.dueDate).getTime() : Infinity;
@@ -772,22 +895,23 @@
             });
 
             if (total === 0) {
-                showState('<div class="empty-state"><div class="big">🏆</div>Não há missões ativas. A equipa está de folga!</div>');
+                showState('<div class="empty-state"><div class="big">🏆</div>Ainda não há tarefas. Adiciona a primeira aí ao lado.</div>');
                 return;
             }
             if (visible.length === 0) {
                 let msg = 'Nada nesta vista.';
-                if (currentFilter === 'done') msg = 'Ainda não há missões concluídas. Bora!';
-                else if (currentFilter === 'mine') msg = 'Não tens missões atribuídas. 🎉';
+                if (currentFilter === 'done') msg = 'Ainda não há tarefas concluídas.';
+                else if (currentFilter === 'mine') msg = 'Não tens tarefas atribuídas.';
                 else if (currentFilter === 'active') msg = 'Tudo feito. Bom trabalho, equipa!';
-                else if (categoryFilter !== 'all') msg = 'Nenhuma missão nesta categoria.';
+                else if (viewMode !== 'areas' && areaFilter !== 'all') msg = 'Nenhuma tarefa nesta área.';
+                else if (viewMode !== 'pessoas' && assigneeFilter !== 'all') msg = 'Nenhuma tarefa para este responsável.';
                 showState(`<div class="empty-state"><div class="big">✅</div>${msg}</div>`);
                 return;
             }
 
             clearState();
-            if (viewMode === 'board') renderBoard(visible);
-            else renderList(visible);
+            if (viewMode === 'lista') renderList(visible);
+            else renderBoard(visible);
         }
 
         function renderList(visible) {
@@ -796,34 +920,82 @@
             visible.forEach((task, i) => taskList.appendChild(buildTaskCard(task, i)));
         }
 
+        // Avatar de coluna: a foto do Google só existe para a sessão atual, por
+        // isso os outros membros aparecem com a inicial sobre a sua cor.
+        function memberAvatar(m) {
+            if (currentUser && m.email === currentUser.email && currentUser.photoURL) {
+                return `<span class="col-avatar"><img src="${escapeHtml(currentUser.photoURL)}" alt=""></span>`;
+            }
+            return `<span class="col-avatar">${escapeHtml(m.first.charAt(0).toUpperCase())}</span>`;
+        }
+
+        // Descrição das colunas da vista ativa. É o único sítio que sabe se as
+        // colunas são pessoas ou áreas — renderBoard só as desenha.
+        // As colunas são sempre o conjunto completo: o filtro escondido em cada
+        // vista é ignorado aqui pela mesma razão que é ignorado em render(),
+        // senão ficava a esconder colunas a partir de um select invisível.
+        function columnsFor() {
+            if (viewMode === 'areas') {
+                const cols = Object.keys(AREAS).map(k => ({
+                    key: k, title: AREAS[k].label, sub: '', color: AREAS[k].color,
+                    icon: '<span class="board-col-dot"></span>',
+                    empty: 'Sem tarefas nesta área<br>arrasta uma para aqui'
+                }));
+                // Só de saída: aparece enquanto houver tarefas com categoria antiga.
+                cols.push({
+                    key: UNCLASSED, title: 'Por classificar', sub: 'Categoria antiga', color: NO_ONE.color,
+                    icon: '<span class="board-col-dot"></span>', onlyIfFilled: true, noDrop: true, empty: ''
+                });
+                return cols;
+            }
+            const cols = MEMBERS.map(m => ({
+                key: m.email, title: m.first, sub: m.role, color: m.color,
+                icon: memberAvatar(m),
+                empty: `Sem tarefas para o ${escapeHtml(m.first)}<br>arrasta uma para aqui`
+            }));
+            cols.push({
+                key: NO_ONE.key, title: NO_ONE.name, sub: NO_ONE.role, color: NO_ONE.color,
+                icon: '<span class="board-col-dot"></span>',
+                empty: 'Tudo com dono<br>bom trabalho'
+            });
+            return cols;
+        }
+
         function renderBoard(visible) {
             const board = document.getElementById('board');
-            const keys = Object.keys(CATEGORIES).filter(k => categoryFilter === 'all' || k === categoryFilter);
+            const cols = columnsFor();
+            const keyOf = (viewMode === 'areas') ? normArea : assigneeKey;
 
             const groups = {};
-            keys.forEach(k => { groups[k] = []; });
+            cols.forEach(c => { groups[c.key] = []; });
             visible.forEach(t => {
-                const k = CATEGORIES[t.category] ? t.category : 'geral';
+                const k = keyOf(t);
                 if (groups[k]) groups[k].push(t);
             });
 
             board.innerHTML = '';
-            keys.forEach(k => {
-                const items = groups[k];
+            cols.forEach(c => {
+                const items = groups[c.key];
+                if (c.onlyIfFilled && items.length === 0) return;
                 const doneHere = items.filter(t => t.done).length;
+                const ratio = items.length ? (doneHere / items.length) : 0;
                 const col = document.createElement('section');
-                col.className = 'board-col';
-                col.dataset.cat = k;
-                col.style.setProperty('--col-color', CATEGORIES[k].color);
+                col.className = 'board-col' + (c.noDrop ? ' no-drop' : '');
+                col.dataset.group = c.key;
+                col.style.setProperty('--col-color', c.color);
                 col.innerHTML = `
                     <header class="board-col-head">
-                        <span class="board-col-dot" style="background:${CATEGORIES[k].color}"></span>
-                        <span class="board-col-title">${CATEGORIES[k].label}</span>
+                        ${c.icon}
+                        <span class="col-id">
+                            <span class="board-col-title">${escapeHtml(c.title)}</span>
+                            ${c.sub ? `<span class="board-col-sub">${escapeHtml(c.sub)}</span>` : ''}
+                        </span>
                         <span class="board-col-count">${doneHere > 0 ? `<b>${doneHere}</b>/${items.length}` : items.length}</span>
+                        <span class="col-progress"><i style="transform:scaleX(${ratio})"></i></span>
                     </header>
                     <div class="board-col-body"></div>`;
                 const body = col.querySelector('.board-col-body');
-                if (items.length === 0) body.innerHTML = '<div class="col-empty"><span class="big">⇣</span>Sem missões<br>arrasta uma para aqui</div>';
+                if (items.length === 0) body.innerHTML = `<div class="col-empty"><span class="big">⇣</span>${c.empty}</div>`;
                 else items.forEach((task, i) => body.appendChild(buildTaskCard(task, i)));
                 board.appendChild(col);
             });
@@ -839,12 +1011,13 @@
             // ---- MODO EDIÇÃO ----
             if (editingId === id) {
                 card.className = 'task-card editing';
+                const owner = memberOf(task);
                 card.innerHTML = `
                     <div class="task-edit">
-                        <input type="text" id="edit-text-${id}" value="${escapeHtml(task.text)}" placeholder="Descrição da missão">
+                        <input type="text" id="edit-text-${id}" value="${escapeHtml(task.text)}" placeholder="Descrição da tarefa">
                         <div class="edit-row">
-                            <select id="edit-cat-${id}">${catOptions(task.category || 'geral')}</select>
-                            <input type="text" id="edit-assignee-${id}" value="${escapeHtml(task.assignee || '')}" list="members" placeholder="Responsável">
+                            <select id="edit-assignee-${id}" aria-label="Responsável">${assigneeOptions(owner ? owner.email : '')}</select>
+                            <select id="edit-cat-${id}" aria-label="Área">${areaOptions(AREAS[task.category] ? task.category : DEFAULT_AREA)}</select>
                             <input type="date" id="edit-due-${id}" value="${task.dueDate || ''}">
                         </div>
                         <div class="edit-actions">
@@ -856,16 +1029,25 @@
             }
 
             // ---- MODO NORMAL ----
-            card.className = `task-card ${isDone ? 'done' : ''}`;
-            const author = firstName(task.createdBy);
-            const cat = CATEGORIES[task.category] || CATEGORIES.geral;
-
-            // Em colunas a categoria já é dada pela própria coluna — repeti-la
-            // em cada cartão só engorda o cartão sem dizer nada de novo.
-            let chips = viewMode === 'board' ? ''
-                : `<span class="chip"><span class="dot" style="background:${cat.color}"></span>${cat.label}</span>`;
-            if (task.assignee) chips += `<span class="chip assignee">👤 ${escapeHtml(firstName(task.assignee))}</span>`;
             const due = dueInfo(task.dueDate, isDone);
+            card.className = `task-card ${isDone ? 'done' : ''} ${due && due.late ? 'overdue' : ''}`;
+            const author = firstName(task.createdBy);
+            const owner = memberOf(task);
+            const area = AREAS[task.category] || null;
+
+            // Cada vista esconde o que a própria coluna já diz: em Pessoas não
+            // se repete o responsável, em Áreas não se repete a área.
+            let chips = '';
+            if (viewMode !== 'areas') {
+                chips += area
+                    ? `<span class="chip"><span class="dot" style="background:${area.color}"></span>${area.label}</span>`
+                    : `<span class="chip unassigned">Por classificar</span>`;
+            }
+            if (viewMode !== 'pessoas') {
+                chips += owner
+                    ? `<span class="chip assignee">👤 ${escapeHtml(owner.first)}</span>`
+                    : `<span class="chip unassigned">Por atribuir</span>`;
+            }
             if (due) chips += `<span class="chip ${due.cls}">${due.text}</span>`;
             const chipsRow = chips ? `<div class="meta-chips">${chips}</div>` : '';
 
@@ -885,7 +1067,7 @@
 
             // Em colunas o espaço é curto: comentários ficam atrás de um botão.
             const nComments = (task.comments || []).length;
-            const collapse = viewMode === 'board' && !expandedCards.has(id);
+            const collapse = viewMode !== 'lista' && !expandedCards.has(id);
             const commentsBlock = collapse
                 ? `<div class="comments-section collapsed">
                         <button class="comment-toggle" onclick="toggleComments('${id}')">💬 ${nComments > 0 ? nComments + (nComments === 1 ? ' comentário' : ' comentários') : 'Comentar'}</button>
@@ -898,8 +1080,9 @@
                         </div>
                     </div>`;
 
-            const dragHandle = viewMode === 'board'
-                ? `<button class="drag-handle" title="Arrastar para outra categoria" aria-label="Arrastar para outra categoria">⠿</button>`
+            const dragLabel = viewMode === 'areas' ? 'Arrastar para outra área' : 'Arrastar para outra pessoa';
+            const dragHandle = viewMode !== 'lista'
+                ? `<button class="drag-handle" title="${dragLabel}" aria-label="${dragLabel}">⠿</button>`
                 : '';
 
             card.innerHTML = `
@@ -914,7 +1097,7 @@
                     </div>
                     <div class="task-actions">
                         ${dragHandle}
-                        <button class="icon-btn" onclick="startEdit('${id}')" aria-label="Editar missão" title="Editar">✎</button>
+                        <button class="icon-btn" onclick="startEdit('${id}')" aria-label="Editar tarefa" title="Editar">✎</button>
                         <button class="delete-btn" onclick="deleteTask('${id}', this)">Apagar</button>
                     </div>
                 </div>
@@ -938,6 +1121,17 @@
             else if (clientX > r.right - AUTOSCROLL_EDGE) board.scrollLeft += AUTOSCROLL_STEP;
         }
 
+        // O que é que largar numa coluna significa, conforme a vista.
+        // Devolve null quando a coluna não aceita tarefas.
+        function dropUpdateFor(groupKey) {
+            if (viewMode === 'areas') {
+                if (!AREAS[groupKey]) return null;   // "Por classificar" é só de saída
+                return { category: groupKey };
+            }
+            const member = memberByEmail(groupKey);
+            return { assigneeEmail: member ? member.email : null, assignee: member ? member.name : '' };
+        }
+
         function endDrag(commit) {
             if (!dragState) return;
             const { card, proxy, target, handle, pointerId, id, from } = dragState;
@@ -947,15 +1141,18 @@
             if (target) target.classList.remove('drop-target');
             document.body.classList.remove('is-dragging');
 
-            const toCat = (commit && target) ? target.dataset.cat : null;
+            const to = (commit && target) ? target.dataset.group : null;
             dragState = null;
             pendingRender = false;
 
-            if (toCat && toCat !== from) {
-                db.collection("tasks").doc(id).update({ category: toCat }).catch(error => {
-                    console.error("Erro ao mudar de categoria: ", error);
-                    render();
-                });
+            if (to && to !== from) {
+                const update = dropUpdateFor(to);
+                if (update) {
+                    db.collection("tasks").doc(id).update(update).catch(error => {
+                        console.error("Erro ao mover a tarefa: ", error);
+                        render();
+                    });
+                }
             }
             render();
         }
@@ -986,7 +1183,7 @@
             dragState = {
                 id: card.dataset.id, card, proxy, handle, pointerId: e.pointerId,
                 dx: e.clientX - rect.left, dy: e.clientY - rect.top,
-                from: col.dataset.cat, target: null
+                from: col.dataset.group, target: null
             };
         });
 
