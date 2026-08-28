@@ -418,6 +418,145 @@
             .add-details { flex-direction: column; }
             .add-details .field { flex: none; }
         }
+
+        /* ─────────────────────────────────────────────────────────────
+           TELEMÓVEL / TABLET
+           Antes de 1000px a sidebar inteira (progresso + formulário +
+           filtros) ficava por cima do quadro: era preciso passar um ecrã
+           inteiro antes de ver a primeira tarefa. Aqui o ecrã passa a
+           shell fixo — cabeçalho fino, quadro a ocupar o resto — e o
+           formulário e os filtros sobem numa folha, a pedido.
+           ───────────────────────────────────────────────────────────── */
+
+        /* Base: estas peças só existem no telemóvel. display:contents faz a
+           folha desaparecer da árvore de layout no desktop, logo a sidebar
+           fica exactamente como estava. */
+        .sheet-body { display: contents; }
+        .sheet-head, .sheet-scrim, .mobile-actions { display: none; }
+
+        @media (max-width: 999px) {
+            body { padding: 1.5rem 0.9rem 2.5rem; }
+            body.is-auth { height: 100dvh; overflow: hidden; padding: 0 0 calc(66px + env(safe-area-inset-bottom)); }
+            body.is-auth .container { display: flex; flex-direction: column; height: 100%; min-height: 0; padding: 0 0.8rem; }
+
+            /* Cabeçalho colado ao topo, para o quadro começar logo abaixo. */
+            body.is-auth .container > header {
+                margin: 0; padding: calc(0.55rem + env(safe-area-inset-top)) 0 0.55rem;
+                position: sticky; top: 0; z-index: 20; background: var(--bg);
+            }
+            body.is-auth .header-bar { min-height: 0; }
+            .brand-mark { width: 38px; }
+            body.is-auth .bar-title { font-size: 0.85rem; }
+
+            body.is-auth #app-screen { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+            body.is-auth .app-grid { flex: 1; min-height: 0; grid-template-rows: auto minmax(0, 1fr); gap: 0.7rem; }
+            body.is-auth .sidebar { gap: 0.6rem; }
+            body.is-auth .main-col { display: flex; flex-direction: column; min-height: 0; }
+
+            /* Progresso: indicador, não painel. */
+            .progress-wrap { padding: 0.55rem 0.8rem; }
+            .progress-top { margin-bottom: 0.45rem; }
+            .progress-count { font-size: 0.95rem; }
+            .view-switch { padding: 3px; }
+            .view-switch button { padding: 11px 6px; font-size: 0.8rem; }
+
+            /* Quadro: cada coluna com scroll próprio e encaixe horizontal.
+               85vw deixa espreitar a coluna seguinte — é isso que diz que há
+               mais colunas para o lado. */
+            body.is-auth.board-mode .board {
+                flex: 1; min-height: 0; align-items: stretch;
+                scroll-snap-type: x mandatory; gap: 0.6rem; padding-bottom: 0.4rem;
+            }
+            .board-col { flex: 0 0 min(85vw, 320px); scroll-snap-align: center; max-height: 100%; }
+            /* Cartões mais densos: num ecrã de telemóvel cabiam só dois. */
+            .board-col-body { gap: 0.55rem; padding: 0.6rem; }
+            .board-col .task-card { padding: 0.7rem 0.8rem; }
+            body.is-auth.board-mode .board-col-body { flex: 1; min-height: 0; overflow-y: auto; }
+            body.is-auth:not(.board-mode) .main-col { overflow-y: auto; padding-bottom: 0.5rem; }
+            /* Na lista as acções ao lado do título espremiam-no a quatro linhas;
+               passam para uma linha própria, como já acontece nas colunas. */
+            .task-header { flex-direction: column; align-items: stretch; gap: 6px; }
+            .task-actions { justify-content: flex-end; }
+
+            /* FOLHA INFERIOR — formulário e filtros */
+            .sheet-body {
+                display: flex; flex-direction: column; gap: 0.8rem;
+                position: fixed; left: 0; right: 0; bottom: 0; z-index: 60;
+                max-height: 88dvh; overflow-y: auto; overscroll-behavior: contain;
+                padding: 0.5rem 1rem calc(1.1rem + env(safe-area-inset-bottom));
+                background: var(--navy-900); border-top: 1px solid var(--border);
+                border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+                box-shadow: 0 -26px 55px -22px rgba(0,0,0,0.9);
+                transform: translateY(101%); visibility: hidden;
+                transition: transform 320ms var(--ease-out-expo), visibility 320ms;
+            }
+            body.sheet-open .sheet-body { transform: translateY(0); visibility: visible; }
+            .sheet-body .panel { background: transparent; border: none; box-shadow: none; padding: 0; }
+            .sheet-body .panel + .panel { border-top: 1px solid var(--hairline); padding-top: 0.9rem; }
+            /* Pega e fecho ficam colados ao topo da folha, senão desaparecem
+               quando ela abre já rolada nos filtros. */
+            .sheet-head { display: flex; align-items: center; justify-content: flex-end; position: sticky; top: 0; z-index: 1;
+                min-height: 34px; background: var(--navy-900); }
+            .sheet-grab { position: absolute; left: 50%; top: 4px; width: 42px; height: 4px; margin-left: -21px; border-radius: 999px; background: var(--muted-2); }
+            .sheet-close { background: transparent; color: var(--muted); font-size: 1rem; min-width: 44px; min-height: 40px; }
+            .sheet-scrim {
+                display: block; position: fixed; inset: 0; z-index: 50; background: rgba(4,6,15,0.62);
+                opacity: 0; pointer-events: none; transition: opacity 280ms var(--ease-fluid);
+            }
+            body.sheet-open .sheet-scrim { opacity: 1; pointer-events: auto; }
+
+            /* BARRA DE ACÇÕES — ao alcance do polegar */
+            .mobile-actions {
+                display: flex; gap: 8px; position: fixed; left: 0; right: 0; bottom: 0; z-index: 45;
+                padding: 9px 0.8rem calc(9px + env(safe-area-inset-bottom));
+                background: linear-gradient(180deg, rgba(7,11,28,0), var(--navy-950) 45%);
+            }
+            body:not(.is-auth) .mobile-actions, body.sheet-open .mobile-actions { display: none; }
+            .mob-btn {
+                flex: 1; min-height: 48px; border-radius: 999px; font-size: 0.85rem; font-weight: 700;
+                background: var(--navy-800); color: var(--text); box-shadow: inset 0 0 0 1px var(--border);
+            }
+            .mob-add {
+                flex: 1.25; background: var(--gold); color: var(--navy-950); box-shadow: 0 14px 28px -14px rgba(0,0,0,0.9);
+                font-family: 'Archivo', sans-serif; font-variation-settings: 'wdth' 125; font-weight: 800;
+                text-transform: uppercase; letter-spacing: 0.02em;
+            }
+            .add-task-form { flex-direction: column; }
+            .add-task-form input[type="text"], .add-task-form .btn-primary { width: 100%; }
+        }
+        /* Telemóvel deitado: o shell fixo deixava 140px para o quadro. Abaixo de
+           560px de altura volta o scroll normal da página. */
+        @media (max-width: 999px) and (max-height: 560px) {
+            body.is-auth { height: auto; overflow: visible; }
+            body.is-auth .container { display: block; height: auto; }
+            body.is-auth .container > header { position: static; }
+            body.is-auth #app-screen { display: block; }
+            body.is-auth .main-col { display: block; }
+            body.is-auth.board-mode .board { display: flex; }
+            .board-col { max-height: none; }
+            body.is-auth.board-mode .board-col-body { overflow-y: visible; }
+            body.is-auth:not(.board-mode) .main-col { overflow-y: visible; }
+        }
+
+        /* O nome do utilizador rebenta a barra em ecrãs estreitos; o avatar chega. */
+        @media (max-width: 480px) {
+            #user-name { display: none; }
+        }
+
+        /* ALVOS TÁTEIS — 40-44px onde se toca com o dedo, sem inchar no rato.
+           Os ícones dos cartões tinham ~28px, abaixo do mínimo utilizável. */
+        @media (pointer: coarse) {
+            .icon-btn, .delete-btn, .drag-handle, .comment-toggle, .filter-chip, .logout-btn {
+                min-height: 40px; display: inline-flex; align-items: center; justify-content: center;
+            }
+            .icon-btn, .drag-handle { min-width: 40px; }
+            .board-col .icon-btn { padding: 8px 10px; }
+            .board-col .delete-btn { padding: 8px 12px; font-size: 0.75rem; }
+            .check-btn { width: 30px; height: 30px; margin-top: 0; }
+            .comment-del { min-width: 36px; min-height: 36px; display: flex; align-items: center; justify-content: center; }
+            .comment-list li { padding-right: 44px; }
+            .task-actions { gap: 2px; }
+        }
     </style>
 </head>
 <body>
@@ -474,6 +613,17 @@
                     <div class="progress-track"><div class="progress-bar" id="progress-bar"></div></div>
                 </div>
 
+                <div class="view-switch" id="view-switch">
+                    <button type="button" data-view="pessoas" onclick="setView('pessoas')" title="Uma coluna por pessoa da equipa">👤 Pessoas</button>
+                    <button type="button" data-view="areas" onclick="setView('areas')" title="Uma coluna por área de trabalho">🗂 Áreas</button>
+                    <button type="button" data-view="lista" onclick="setView('lista')" title="Tudo numa lista única">☰ Lista</button>
+                </div>
+
+                <!-- No telemóvel estes dois painéis sobem numa folha inferior; no
+                     desktop o display:contents deixa-os exactamente onde estavam. -->
+                <div class="sheet-body" id="sheet-body">
+                <div class="sheet-head"><span class="sheet-grab"></span><button class="sheet-close" type="button" onclick="closeSheet()" aria-label="Fechar">✕</button></div>
+
                 <div class="panel add-panel">
                     <div class="add-task-form">
                         <input type="text" id="new-task-input" placeholder="Nova tarefa..." autocomplete="off">
@@ -496,11 +646,6 @@
                 </div>
 
                 <div class="panel filter-panel">
-                    <div class="view-switch" id="view-switch">
-                        <button type="button" data-view="pessoas" onclick="setView('pessoas')" title="Uma coluna por pessoa da equipa">👤 Pessoas</button>
-                        <button type="button" data-view="areas" onclick="setView('areas')" title="Uma coluna por área de trabalho">🗂 Áreas</button>
-                        <button type="button" data-view="lista" onclick="setView('lista')" title="Tudo numa lista única">☰ Lista</button>
-                    </div>
                     <div class="filters" id="filters">
                         <button class="filter-chip active" data-filter="all" onclick="setFilter('all')">Todas <span class="badge" id="count-all">0</span></button>
                         <button class="filter-chip" data-filter="active" onclick="setFilter('active')">Ativas <span class="badge" id="count-active">0</span></button>
@@ -517,6 +662,7 @@
                     </div>
                     <div class="bulk-actions" id="bulk-actions"></div>
                 </div>
+                </div>
             </aside>
 
             <main class="main-col">
@@ -528,6 +674,13 @@
             </main>
           </div>
         </div>
+    </div>
+
+    <!-- Barra de acções e véu da folha: só aparecem abaixo de 1000px. -->
+    <div class="sheet-scrim" id="sheet-scrim" onclick="closeSheet()"></div>
+    <div class="mobile-actions">
+        <button class="mob-btn mob-add" type="button" onclick="openSheet('add')">+ Nova tarefa</button>
+        <button class="mob-btn" type="button" onclick="openSheet('filters')">Filtros</button>
     </div>
 
     <script>
@@ -722,7 +875,8 @@
                 document.getElementById('new-assignee').value = '';
                 document.getElementById('new-due').value = '';
                 document.getElementById('new-category').value = DEFAULT_AREA;
-                input.focus();
+                if (document.body.classList.contains('sheet-open')) { closeSheet(); input.blur(); }
+                else input.focus();
             });
         }
 
@@ -835,6 +989,20 @@
         };
 
         document.getElementById('new-task-input').addEventListener('keypress', e => { if (e.key === 'Enter') addTask(); });
+
+        // --- FOLHA INFERIOR (telemóvel) ---
+        // O formulário e os filtros vivem fora do ecrã até serem pedidos, para
+        // o quadro ocupar o telemóvel todo.
+        window.openSheet = function(section) {
+            const sheet = document.getElementById('sheet-body');
+            document.body.classList.add('sheet-open');
+            if (!sheet) return;
+            const target = document.querySelector(section === 'filters' ? '.filter-panel' : '.add-panel');
+            sheet.scrollTop = target ? target.offsetTop - sheet.offsetTop : 0;
+            if (section === 'add') setTimeout(() => document.getElementById('new-task-input').focus(), 340);
+        };
+        window.closeSheet = function() { document.body.classList.remove('sheet-open'); };
+        document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSheet(); });
 
         // =========================================================
         // RENDER
@@ -1121,6 +1289,16 @@
             else if (clientX > r.right - AUTOSCROLL_EDGE) board.scrollLeft += AUTOSCROLL_STEP;
         }
 
+        // As colunas têm scroll próprio (sempre no telemóvel, no quadro fixo em
+        // desktop): arrastar até à ponta tem de puxar a lista para cima/baixo.
+        function autoScrollColumn(col, clientY) {
+            const body = col ? col.querySelector('.board-col-body') : null;
+            if (!body || body.scrollHeight <= body.clientHeight) return;
+            const r = body.getBoundingClientRect();
+            if (clientY < r.top + AUTOSCROLL_EDGE) body.scrollTop -= AUTOSCROLL_STEP;
+            else if (clientY > r.bottom - AUTOSCROLL_EDGE) body.scrollTop += AUTOSCROLL_STEP;
+        }
+
         // O que é que largar numa coluna significa, conforme a vista.
         // Devolve null quando a coluna não aceita tarefas.
         function dropUpdateFor(groupKey) {
@@ -1202,6 +1380,7 @@
                 if (col) col.classList.add('drop-target');
             }
             autoScrollBoard(e.clientX);
+            autoScrollColumn(col, e.clientY);
         });
 
         document.addEventListener('pointerup', e => { if (dragState && e.pointerId === dragState.pointerId) endDrag(true); });
